@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "93611487695",
+    "project_id": "personal-drive-15dd2",
+    "storage_bucket": "personal-drive-15dd2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:93611487695:android:02c4c987ea35d0319de2ba",
+        "android_client_info": {
+          "package_name": "ae.rak.pestcontrol.technician.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCm4-KWGSJvyEuXipWZXiaXa3v2UMABKOw"
+        },
+        {
+          "current_key": "AIzaSyDoINTXcJm31HOQrSbiPtBbzNEreqnKLmg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:93611487695:android:d6a315f5b756e06f9de2ba",
+        "android_client_info": {
+          "package_name": "io.personaldrive.starterFCM"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCm4-KWGSJvyEuXipWZXiaXa3v2UMABKOw"
+        },
+        {
+          "current_key": "AIzaSyDoINTXcJm31HOQrSbiPtBbzNEreqnKLmg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

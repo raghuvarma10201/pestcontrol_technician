@@ -1,0 +1,43 @@
+# bitbucket-pipelines.yml
+
+image: mogiio7/ionic-android-v2-qa-jk:8  
+# Use a Node.js image with Ionic and Capacitor pre-installed
+
+pipelines:
+  default:
+    - step:
+        name: Install dependencies
+        caches:
+          - node
+        script:
+          - npm install -g @ionic/cli
+          - npm install
+          - apt-get update && apt-get install -y openjdk-11-jdk
+          - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+          - wget https://services.gradle.org/distributions/gradle-7.3-bin.zip 
+          - mkdir /opt/gradle
+          - unzip -d /opt/gradle gradle-7.3-bin.zip
+          - export PATH=$PATH:/opt/gradle/gradle-7.3/bin
+          - cd /opt/atlassian/pipelines/agent/build
+          - npm install
+
+    - step:
+        name: Build Android APK
+        caches:
+          - node
+        script:
+          - npm install -g @ionic/cli # Re-install Ionic CLI to ensure it's available
+          - npm install
+          - ionic build --prod
+          - npx cap add android
+          - npx cap copy android
+          - npx cap build --keystorepath "certs/rak-pestcontrol"  --keystorepass 123456  --keystorealias key1 --keystorealiaspass 123456 --androidreleasetype APK  android
+
+    - step:
+        name: Deploy APK artifact
+        deployment: staging
+        script:
+          - mkdir -p artifacts
+          - cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/app-debug.apk
+        artifacts:
+          - artifacts/**

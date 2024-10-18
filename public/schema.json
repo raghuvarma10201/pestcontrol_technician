@@ -1,0 +1,78 @@
+        {
+            "task": {
+                "ServerFields": [
+                    {
+                        "column": "id",
+                        "type": "INTEGER PRIMARY KEY NOT NULL"
+                    },
+                    {
+                        "column": "service_name",
+                        "type": "TEXT UNIQUE NOT NULL"
+                    },
+                    {
+                        "column": "address",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "status",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "created_on",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "service_date",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "expiry_date",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "preffered_time",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "service_status",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "visit_type",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "reference_number",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "priority",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "service_id",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "last_modified",
+                        "type": "INTEGER DEFAULT (strftime('%s', 'now'))"
+                    }
+                ]
+            },
+            "technician": {
+                "ServerFields": [
+                    {
+                        "column": "id",
+                        "type": "INTEGER"
+                    },
+                    {
+                        "column": "name",
+                        "type": "TEXT"
+                    },
+                    {
+                        "column": "age",
+                        "type": "INTEGER"
+                    }
+                ]
+            }
+        }

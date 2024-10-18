@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <clipPath id="clip-stock-transfer-header-icon">
+      <rect width="40" height="40"/>
+    </clipPath>
+  </defs>
+  <g id="stock-transfer-header-icon" clip-path="url(#clip-stock-transfer-header-icon)">
+    <g id="stocktrasfer-icon" transform="translate(-10.5 -10.98)">
+      <g id="Group_4116" data-name="Group 4116" transform="translate(11 10.98)">
+        <path id="Path_14196" data-name="Path 14196" d="M12.873,977.374a.961.961,0,0,0-.968.964.983.983,0,0,0,1.063.878H49.512a.925.925,0,1,0,0-1.842H12.968Q12.92,977.372,12.873,977.374Z" transform="translate(-11.488 -970.141)" fill="#294a92" stroke="#294a92" stroke-width="0.2"/>
+        <path id="Path_14197" data-name="Path 14197" d="M41.844,963.343a1.014,1.014,0,0,0-.912.669,1.034,1.034,0,0,0,.263,1.109l7.28,6.872v29.3H16.064a1.025,1.025,0,0,0,0,2.051H49.487a1.019,1.019,0,0,0,1.013-1.025V971.561a1.031,1.031,0,0,0-.317-.753l-7.6-7.177a1.007,1.007,0,0,0-.744-.288Zm-22.33.016a1.006,1.006,0,0,0-.6.273l-7.6,7.176a1.031,1.031,0,0,0-.317.753v30.756a1.013,1.013,0,1,0,2.026,0V971.993L20,965.41H37.84a1.025,1.025,0,0,0,0-2.05H19.609A.948.948,0,0,0,19.514,963.359Z" transform="translate(-11 -963.342)" fill="#294a92" stroke="#294a92" stroke-width="0.2"/>
+        <path id="Path_14198" data-name="Path 14198" d="M48.82,964.337a.921.921,0,0,0-.82.935V970.8a.921.921,0,0,0,1.841,0v-5.524a.921.921,0,0,0-1.021-.935Z" transform="translate(-29.17 -963.876)" fill="#294a92" stroke="#294a92" stroke-width="0.2"/>
+        <g id="Group_4117" data-name="Group 4117" transform="translate(13.302 14.947)">
+          <path id="Path_14199" data-name="Path 14199" d="M48.82,991.337a.921.921,0,0,0-.82.935v15.191a.921.921,0,0,0,1.841,0V992.272a.921.921,0,0,0-1.021-.935Z" transform="translate(-42.473 -990.644)" fill="#294a92" stroke="#294a92" stroke-width="0.2"/>
+          <path id="Path_14200" data-name="Path 14200" d="M42.312,990.364a.92.92,0,0,0-.575.316l-5.524,6.445a.924.924,0,0,0,1.41,1.194l4.819-5.625,4.819,5.625a.924.924,0,1,0,1.41-1.194l-5.524-6.445a.921.921,0,0,0-.834-.316Z" transform="translate(-35.993 -990.355)" fill="#294a92" stroke="#294a92" stroke-width="0.2"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

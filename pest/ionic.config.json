@@ -1,0 +1,7 @@
+{
+  "name": "pest",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
