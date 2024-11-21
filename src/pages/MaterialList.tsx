@@ -14,7 +14,7 @@ import {
   IonToolbar,
   IonIcon,
 } from "@ionic/react";
-import {toast} from "react-toastify";
+import {toast, ToastContainer} from "react-toastify";
 
 interface Material {
   id: number; // Adjust the type of id according to your API response
@@ -119,6 +119,7 @@ const MaterialList: React.FC = () => {
       className="ionContentColor"
       style={{ paddingBottom: "60px" }}
     >
+      <ToastContainer />
       <IonToolbar>
         <IonButton fill="clear" onClick={() => history.goBack()} slot="start">
           <IonIcon slot="icon-only" icon={arrowBack} />

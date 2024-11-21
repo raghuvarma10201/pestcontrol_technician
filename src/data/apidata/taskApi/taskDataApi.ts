@@ -694,6 +694,39 @@ export const getVisitExecutionDetails = async (visitId: string) => {
   }
 };
 
+export const createCallOut = async (payloadObj: any) => {
+  console.log(payloadObj);
+  const userDataString = localStorage.getItem("userData");
+  if (!userDataString) {
+    console.error("User data is not available");
+    throw new Error("User Data Not available");
+  }
+  const userData = JSON.parse(userDataString);
+  const payload = payloadObj;
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/create-callout
+`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData?.api_token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (response.ok) {
+      return await response.json(); // Ensure response data is returned
+    } else {
+      console.error("Failed to fetch Visit Status Count:", response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in Visit status count:", error);
+  }
+};
+
 export const createTask = async (payloadObj: any) => {
   console.log(payloadObj);
   const userDataString = localStorage.getItem("userData");
@@ -834,6 +867,37 @@ export const customerLocations = async (customerId: any) => {
     const data = await response.json();
     console.log("customer list: Parsed response data:", data);
 
+    return { response, data };
+  } catch (error) {
+    console.error(
+      "getTreatmentTypes: Error fetching customer locations:",
+      error
+    );
+    throw error;
+  }
+};
+
+export const customerServices = async (customerId: any) => {
+  const userData = getUserData();
+  try {
+    const requestBody = {
+      customer_id: customerId,
+    };
+    const response = await fetch(`${API_BASE_URL}/get-services-by-customer`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userData?.api_token}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch customer locations");
+    }
+
+    const data = await response.json();
+    console.log("customer list: Parsed response data:", data);
     return { response, data };
   } catch (error) {
     console.error(
@@ -1186,10 +1250,6 @@ export const getvisittraveldetails = async (requestBody: any) => {
 export const requestMaterials = async (materialData: any) => {
   const userData = getUserData();
   try {
-    const requestBody = {
-      
-    };
-
     const response = await fetch(`${API_BASE_URL}/request-stock`, {
       method: "POST",
       headers: {

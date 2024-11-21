@@ -81,6 +81,7 @@ import NetworkSpeedCheck from "./components/NetworkSpeedCheck";
 import NetworkStatus from "./components/NetworkStatus";
 import AppUpdate from "./components/AppUpdate";
 import { LoadScript, useLoadScript } from "@react-google-maps/api";
+import CreateCallOut from "./pages/CreateCallOut";
 
 setupIonicReact();
 const getUserId = () => {
@@ -311,7 +312,9 @@ const App: React.FC = () => {
             <Route exact path="/createTask">
               <CreateTask />
             </Route>
-
+            <Route exact path="/createCallOut">
+              <CreateCallOut />
+            </Route>
             <Route exact path="/stocktransferreddetails/:id">
               <StockTransferredDetails />
             </Route>
