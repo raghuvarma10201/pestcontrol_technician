@@ -82,6 +82,7 @@ import NetworkStatus from "./components/NetworkStatus";
 import AppUpdate from "./components/AppUpdate";
 import { LoadScript, useLoadScript } from "@react-google-maps/api";
 import CreateCallOut from "./pages/CreateCallOut";
+import { Storage } from '@capacitor/storage';
 
 setupIonicReact();
 const getUserId = () => {

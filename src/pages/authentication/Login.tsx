@@ -24,7 +24,7 @@ import { loginApi, userCheckIn, userCheckIns } from "../../data/apidata/authApi/
 import "react-toastify/dist/ReactToastify.css";
 import { registerDevice } from "../../utils/pushNotiications";
 import { eye, eyeOff } from "ionicons/icons"; // Import icons
-
+import { Storage } from '@capacitor/storage';
 
 const Login: React.FC = () => {
   const logo = "assets/images/psd-logo.svg";
@@ -88,6 +88,7 @@ const Login: React.FC = () => {
             try {
               await userCheckIns(userData);
               localStorage.setItem("userData", JSON.stringify(userData));
+              await Storage.set({key: 'token', value: userData.api_token});
               history.push("/dashboard");
 
             } catch (error) {

@@ -41,6 +41,9 @@ import {
 } from "../data/offline/entity/DataRetriever";
 import { retrieveNetworkTasksDetails } from "../data/offline/entity/DataRetriever";
 import GoTop from "../components/GoTop";
+import { Storage } from "@capacitor/storage";
+
+
 const Tasks: React.FC = () => {
   const [taskData, setTaskData] = useState<any[]>([]);
   const [selectedSegment, setSelectedSegment] =
@@ -309,6 +312,8 @@ const Tasks: React.FC = () => {
     try {
       const taskDetails = await retrieveNetworkTasksDetails(taskId);
       localStorage.setItem("activeTaskData", JSON.stringify(taskDetails));
+      await Storage.set({key: 'visit_id', value: taskId});
+      
       history.push(`/tasks/${taskId}`);
     } catch (error) {
       console.error("Error fetching task details:", error);

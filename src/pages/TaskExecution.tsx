@@ -53,6 +53,8 @@ import {
 } from "../data/offline/entity/DataTransfer";
 import FullScreenLoader from "../components/FullScreenLoader";
 import FullScreenLoaderTask from "../components/FullScreenLoaderTask";
+import { Storage } from "@capacitor/storage";
+
 interface Pest {
   id: string;
   is_chemical_added: string | null;
@@ -343,7 +345,7 @@ const TaskExecution: React.FC = () => {
   console.log(visitExecutionDetails);
   console.log(taskProgress?.workDoneDetails);
 
-  const clearSessionStorage = () => {
+  const clearSessionStorage = async () => {
     localStorage.removeItem("feedbackFollowupFormData");
     localStorage.removeItem("recommDataArray");
     localStorage.removeItem("selectedChemicalItems");
@@ -362,6 +364,7 @@ const TaskExecution: React.FC = () => {
     localStorage.removeItem(`activeChemicalUsed-${visitId}`);
     localStorage.removeItem(`activityUsageArray-${visitId}`);
     localStorage.removeItem("activeTaskData");
+    await Storage.remove({key: 'visit_id'});
   };
 
   useEffect(() => {
