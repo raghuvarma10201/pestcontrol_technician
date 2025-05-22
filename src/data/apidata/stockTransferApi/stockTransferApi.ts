@@ -15,7 +15,7 @@ export const fetchMaterilData = async (requestBody: any) => {
     try {
       
   
-      const response = await fetch(`${API_BASE_URL}/get-technician-stock`, {
+      const response = await fetch(`${API_BASE_URL}/v1/get-technician-stock`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export const fetchMaterilData = async (requestBody: any) => {
       },
     };
     try {
-      const response = await fetch(`${API_BASE_URL}/get-ideal-technicians`, {
+      const response = await fetch(`${API_BASE_URL}/v1/get-ideal-technicians`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +102,7 @@ export const fetchMaterilData = async (requestBody: any) => {
       "item_details": materials
     };
     try {
-      const response = await fetch(`${API_BASE_URL}/transfer-stock-by-technician`, {
+      const response = await fetch(`${API_BASE_URL}/v1/transfer-stock-by-technician`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +166,7 @@ export const fetchMaterilData = async (requestBody: any) => {
     }
     };
     try {
-      const response = await fetch(`${API_BASE_URL}/get-technicians-stock-transferred`, {
+      const response = await fetch(`${API_BASE_URL}/v1/get-technicians-stock-transferred`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +228,7 @@ export const fetchMaterilData = async (requestBody: any) => {
     }
     };
     try {
-      const response = await fetch(`${API_BASE_URL}/get-technicians-stock-received`, {
+      const response = await fetch(`${API_BASE_URL}/v1/get-technicians-stock-received`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -296,7 +296,7 @@ export const fetchMaterilData = async (requestBody: any) => {
     }
     };
     try {
-      const response = await fetch(`${API_BASE_URL}/get-received-transferred-stock-details`, {
+      const response = await fetch(`${API_BASE_URL}/v1/get-received-transferred-stock-details`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -333,7 +333,7 @@ export const fetchMaterilData = async (requestBody: any) => {
     "reason" : reason
     };
     try {
-      const response = await fetch(`${API_BASE_URL}/accept-reject-received-stock`, {
+      const response = await fetch(`${API_BASE_URL}/v1/accept-reject-received-stock`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

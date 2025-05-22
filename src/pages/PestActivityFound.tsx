@@ -63,6 +63,7 @@ import {
 import { Network } from "@capacitor/network";
 import { toast } from "react-toastify";
 import { Storage } from "@ionic/storage";
+import { getCurrentLocation } from "../data/providers/GeoLocationProvider";
 // import {retrievepestActivity} from "../data/offline/entity/DataTransfer"
 const PestActivityFound: React.FC = () => {
   const location = useLongitudeLocation();
@@ -403,8 +404,11 @@ const PestActivityFound: React.FC = () => {
     }
 
     setSubmitting(true);
+    let geolocation: any = await getCurrentLocation();
+    const latitude = geolocation.coords.latitude; // Assuming location is an object with latitude
+    const longitude = geolocation.coords.longitude;
 
-    if (location.latitude === null || location.longitude === null) {
+    if (latitude === null || longitude === null) {
       console.error("Location data is not available");
       return;
     }
@@ -414,8 +418,8 @@ const PestActivityFound: React.FC = () => {
       const { response, data } = await savePestActivityBasedOnNetwork(
         formDataArray,
         // pestOptions,
-        location.latitude,
-        location.longitude,
+        latitude,
+        longitude,
         visitId
       );
 

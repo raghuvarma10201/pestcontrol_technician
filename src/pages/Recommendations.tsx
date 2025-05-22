@@ -275,6 +275,18 @@ const Recommendations = () => {
       }
 
       if (recommItem.is_recommendation_added === "Yes") {
+        if (!recommItem.is_service_available) {
+          isValid = false;
+          console.log("Service available status is required for index:", index);
+        }
+
+        if (!recommItem.recommended_media?.length) {
+          isValid = false;
+          console.log(
+            "Image capture is required for recommendation at index:",
+            index
+          );
+        }
         const recommendationTypes = recommItem.selectedRecommendations || [];
         console.log(
           `Recommendation types for index ${index}:`,
@@ -338,19 +350,6 @@ const Recommendations = () => {
             }
           });
         }
-      }
-
-      if (!recommItem.is_service_available) {
-        isValid = false;
-        console.log("Service available status is required for index:", index);
-      }
-
-      if (!recommItem.recommended_media?.length) {
-        isValid = false;
-        console.log(
-          "Image capture is required for recommendation at index:",
-          index
-        );
       }
     });
 
@@ -524,7 +523,7 @@ const Recommendations = () => {
         id,
       };
     });
- 
+
     console.log(selectedRecommendations);
     setRecommDataArray((prevState) => {
       const newState = [...prevState];
@@ -817,170 +816,174 @@ const Recommendations = () => {
 
                     {recommDataArray[index]?.is_recommendation_added ===
                       "Yes" && (
-                      <>
-                        {recomm.map((type, mapIndex) => (
-                          <IonItem
-                            lines="none"
-                            key={type.recommendation_type_id}
-                          >
+                        <>
+                          {recomm.map((type, mapIndex) => (
+                            <IonItem
+                              lines="none"
+                              key={type.recommendation_type_id}
+                            >
+                              <div className="width100">
+                                <IonLabel className="ion-label">
+                                  {type.recommendation_type} Issue
+                                  <IonText>*</IonText>
+                                </IonLabel>
+                                <IonSelect
+                                  placeholder="Select"
+                                  fill="outline"
+                                  style={{ width: "100%" }}
+                                  multiple={true}
+                                  value={
+                                    recommDataArray[
+                                      index
+                                    ]?.selectedRecommendations
+                                      ?.filter(
+                                        (selected) =>
+                                          selected.recommendation_type_id ===
+                                          type.recommendation_type_id
+                                      )
+                                      .map((selected) => selected.id) || []
+                                  }
+                                  onIonChange={(e) => {
+                                    clearErrors(
+                                      `recommDataArray[${index}].recommendation_id`
+                                    );
+                                    const value = e.detail.value as string[];
+                                    isRecommIdChanged(
+                                      index,
+                                      value,
+                                      type.recommendation_type_id
+                                    );
+                                  }}
+                                >
+                                  {type.recommendations.map((rec: any) => (
+                                    <IonSelectOption key={rec.id} value={rec.id}>
+                                      {rec.recommendation}
+                                    </IonSelectOption>
+                                  ))}
+                                  <IonSelectOption value="Others">
+                                    Others
+                                  </IonSelectOption>
+                                </IonSelect>
+
+                                {formSubmitted &&
+                                  (!recommDataArray[index]
+                                    ?.selectedRecommendations ||
+                                    !recommDataArray[
+                                      index
+                                    ].selectedRecommendations.some(
+                                      (selected: any) =>
+                                        selected.recommendation_type_id ===
+                                        type.recommendation_type_id
+                                    )) && (
+                                    <IonText color="danger">
+                                      Please select at least one recommendation
+                                      for {type.recommendation_type}.
+                                    </IonText>
+                                  )}
+
+                                {othersSelections[index]?.[
+                                  type.recommendation_type_id
+                                ] && (
+                                    <IonItem lines="none">
+                                      <div className="width100">
+                                        <IonLabel className="ion-label">
+                                          Description<IonText>*</IonText>
+                                        </IonLabel>
+                                        <IonTextarea
+                                          aria-label="Reason"
+                                          fill="outline"
+                                          placeholder="Enter reason"
+                                          value={
+                                            customDescriptions[index]?.[
+                                            type.recommendation_type_id
+                                            ] || ""
+                                          }
+                                          onIonInput={(e) => {
+                                            console.log(
+                                              `User is typing in description for index: ${index}, recommendationTypeId: ${type.recommendation_type_id}`
+                                            );
+                                            clearErrors(
+                                              `customDescriptions[${index}].${type.recommendation_type_id}`
+                                            );
+                                            handleReasonChange(
+                                              index,
+                                              type.recommendation_type_id,
+                                              e.detail.value || ""
+                                            );
+                                          }}
+                                        ></IonTextarea>
+                                        {formSubmitted &&
+                                          !customDescriptions[index]?.[
+                                          type.recommendation_type_id
+                                          ] && (
+                                            <IonText color="danger">
+                                              Description is required for 'Others'
+                                              selection.
+                                            </IonText>
+                                          )}
+                                      </div>
+                                    </IonItem>
+                                  )}
+                              </div>
+                            </IonItem>
+                          ))}
+                        </>
+                      )}
+                    {recommDataArray[index]?.is_recommendation_added ===
+                      "Yes" && (
+                        <>
+                          <IonItem lines="none">
                             <div className="width100">
                               <IonLabel className="ion-label">
-                                {type.recommendation_type} Issue
-                                <IonText>*</IonText>
+                                PSD able to Provide Service? <IonText>*</IonText>
                               </IonLabel>
                               <IonSelect
                                 placeholder="Select"
                                 fill="outline"
                                 style={{ width: "100%" }}
-                                multiple={true}
-                                value={
-                                  recommDataArray[
-                                    index
-                                  ]?.selectedRecommendations
-                                    ?.filter(
-                                      (selected) =>
-                                        selected.recommendation_type_id ===
-                                        type.recommendation_type_id
-                                    )
-                                    .map((selected) => selected.id) || []
-                                }
+                                value={recommDataArray[index]?.is_service_available}
                                 onIonChange={(e) => {
+                                  isServAvailChanged(index, e.detail.value || "");
                                   clearErrors(
-                                    `recommDataArray[${index}].recommendation_id`
-                                  );
-                                  const value = e.detail.value as string[];
-                                  isRecommIdChanged(
-                                    index,
-                                    value,
-                                    type.recommendation_type_id
+                                    `recommDataArray[${index}].is_service_available`
                                   );
                                 }}
                               >
-                                {type.recommendations.map((rec: any) => (
-                                  <IonSelectOption key={rec.id} value={rec.id}>
-                                    {rec.recommendation}
-                                  </IonSelectOption>
-                                ))}
-                                <IonSelectOption value="Others">
-                                  Others
-                                </IonSelectOption>
+                                <IonSelectOption value="Yes">Yes</IonSelectOption>
+                                <IonSelectOption value="No">No</IonSelectOption>
+                                <IonSelectOption value="NA">NA</IonSelectOption>
                               </IonSelect>
-
-                              {formSubmitted &&
-                                (!recommDataArray[index]
-                                  ?.selectedRecommendations ||
-                                  !recommDataArray[
-                                    index
-                                  ].selectedRecommendations.some(
-                                    (selected: any) =>
-                                      selected.recommendation_type_id ===
-                                      type.recommendation_type_id
-                                  )) && (
-                                  <IonText color="danger">
-                                    Please select at least one recommendation
-                                    for {type.recommendation_type}.
-                                  </IonText>
-                                )}
-
-                              {othersSelections[index]?.[
-                                type.recommendation_type_id
-                              ] && (
-                                <IonItem lines="none">
-                                  <div className="width100">
-                                    <IonLabel className="ion-label">
-                                      Description<IonText>*</IonText>
-                                    </IonLabel>
-                                    <IonTextarea
-                                      aria-label="Reason"
-                                      fill="outline"
-                                      placeholder="Enter reason"
-                                      value={
-                                        customDescriptions[index]?.[
-                                          type.recommendation_type_id
-                                        ] || ""
-                                      }
-                                      onIonInput={(e) => {
-                                        console.log(
-                                          `User is typing in description for index: ${index}, recommendationTypeId: ${type.recommendation_type_id}`
-                                        );
-                                        clearErrors(
-                                          `customDescriptions[${index}].${type.recommendation_type_id}`
-                                        );
-                                        handleReasonChange(
-                                          index,
-                                          type.recommendation_type_id,
-                                          e.detail.value || ""
-                                        );
-                                      }}
-                                    ></IonTextarea>
-                                    {formSubmitted &&
-                                      !customDescriptions[index]?.[
-                                        type.recommendation_type_id
-                                      ] && (
-                                        <IonText color="danger">
-                                          Description is required for 'Others'
-                                          selection.
-                                        </IonText>
-                                      )}
-                                  </div>
-                                </IonItem>
-                              )}
                             </div>
                           </IonItem>
-                        ))}
-                      </>
-                    )}
+                          {formSubmitted &&
+                            !recommDataArray[index]?.is_service_available && (
+                              <IonText color="danger">
+                                Please select PSD able to Provide Service requirement
+                              </IonText>
+                            )}
 
-                    <IonItem lines="none">
-                      <div className="width100">
-                        <IonLabel className="ion-label">
-                          PSD able to Provide Service? <IonText>*</IonText>
-                        </IonLabel>
-                        <IonSelect
-                          placeholder="Select"
-                          fill="outline"
-                          style={{ width: "100%" }}
-                          value={recommDataArray[index]?.is_service_available}
-                          onIonChange={(e) => {
-                            isServAvailChanged(index, e.detail.value || "");
-                            clearErrors(
-                              `recommDataArray[${index}].is_service_available`
-                            );
-                          }}
-                        >
-                          <IonSelectOption value="Yes">Yes</IonSelectOption>
-                          <IonSelectOption value="No">No</IonSelectOption>
-                          <IonSelectOption value="NA">NA</IonSelectOption>
-                        </IonSelect>
-                      </div>
-                    </IonItem>
-                    {formSubmitted &&
-                      !recommDataArray[index]?.is_service_available && (
-                        <IonText color="danger">
-                          Please select PSD able to Provide Service requirement
-                        </IonText>
+                          <IonItem lines="none">
+                            <div>
+                              <IonButton
+                                className="ion-button"
+                                disabled={images[index]?.length >= 3}
+                                fill="solid"
+                                color="medium"
+                                onClick={() => handleImageUpload(index)}
+                              >
+                                Capture Image
+                              </IonButton>
+                              {formSubmitted &&
+                                !recommDataArray[index]?.recommended_media
+                                  ?.length && (
+                                  <IonText color="danger">
+                                    Please capture an image for this recommendation
+                                  </IonText>
+                                )}
+                            </div>
+                          </IonItem>
+                        </>
                       )}
-
-                    <IonItem lines="none">
-                      <div>
-                        <IonButton
-                          className="ion-button"
-                          disabled={images[index]?.length >= 3}
-                          fill="solid"
-                          color="medium"
-                          onClick={() => handleImageUpload(index)}
-                        >
-                          Capture Image
-                        </IonButton>
-                        {formSubmitted &&
-                          !recommDataArray[index]?.recommended_media
-                            ?.length && (
-                            <IonText color="danger">
-                              Please capture an image for this recommendation
-                            </IonText>
-                          )}
-                      </div>
-                    </IonItem>
 
                     {images[index]?.length >= 3 && (
                       <IonText style={{ color: "#54B4D3" }}>
@@ -1048,7 +1051,7 @@ const Recommendations = () => {
                   className="ion-button"
                   color="primary"
                   type="submit"
-                  // disabled={isSubmitting || !validateInputs()}
+                // disabled={isSubmitting || !validateInputs()}
                 >
                   SUBMIT
                 </IonButton>

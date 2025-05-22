@@ -87,7 +87,7 @@ const TaskReschedule: React.FC = () => {
         reschedule_notes: rescheduleNotes,
       });
 
-      const response = await fetch(`${API_BASE_URL}/reschedule-visit`, {
+      const response = await fetch(`${API_BASE_URL}/v1/reschedule-visit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

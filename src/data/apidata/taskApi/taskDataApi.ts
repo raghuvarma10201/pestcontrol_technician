@@ -34,9 +34,12 @@ export const getActTaskData = () => {
 export const fetchTaskData = async (
   status: string[],
   latitude: number,
-  longitude: number
+  longitude: number,
+  search : string,
+  page : any
 ) => {
   // const location = useLongitudeLocation();
+  console.log("statusArraywwwwwwwww",status);
   const userData = getUserData();
   try {
     const requestBody = {
@@ -59,20 +62,19 @@ export const fetchTaskData = async (
         "tbl_visits.created_on": "asc",
         "tbl_visits.service_date": "asc",
       },
-      filters: {
-        "tbl_visits.service_status": status,
-      },
+      filters: status,
       pagination: {
-        limit: "0",
-        page: "1",
+        limit: "10",
+        page: page,
       },
       coordinates: {
         latitude,
         longitude,
       },
+      search : search
     };
 
-    const response = await fetch(`${API_BASE_URL}/task-list`, {
+    const response = await fetch(`${API_BASE_URL}/v2/task-list`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -131,7 +133,7 @@ export const fetchFilteredTaskData = async (
       },
     };
 
-    const response = await fetch(`${API_BASE_URL}/task-list`, {
+    const response = await fetch(`${API_BASE_URL}/v2/task-list`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -193,7 +195,7 @@ export const completedTaskData = async (
       },
     };
 
-    const response = await fetch(`${API_BASE_URL}/task-list`, {
+    const response = await fetch(`${API_BASE_URL}/v2/task-list`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -216,7 +218,7 @@ export const completedTaskData = async (
 export const visitStatusCount = async () => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/visit-status-count`, {
+    const response = await fetch(`${API_BASE_URL}/v1/visit-status-count`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -261,7 +263,7 @@ export const taskInit = async (
         longitude: "" + pos.coords.longitude,
       },
     ];
-    const response = await fetch(`${API_BASE_URL}/task-initiate`, {
+    const response = await fetch(`${API_BASE_URL}/v1/task-initiate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -289,7 +291,7 @@ export const getTaskInitTimes = async (visitId: string) => {
       visit_id: visitId, //mandatory
     };
 
-    const response = await fetch(`${API_BASE_URL}/get-task-initiate`, {
+    const response = await fetch(`${API_BASE_URL}/v2/get-task-initiate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -350,7 +352,7 @@ export async function fetchTaskDetails(id: string): Promise<any> {
       },
     };
 
-    const response = await fetch(`${API_BASE_URL}/task-detail`, {
+    const response = await fetch(`${API_BASE_URL}/v2/task-detail`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -406,7 +408,7 @@ export const followup = async () => {
         page: "1",
       },
     };
-    const response = await fetch(`${API_BASE_URL}/follow-up-reschedule`, {
+    const response = await fetch(`${API_BASE_URL}/v1/follow-up-reschedule`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -465,7 +467,7 @@ export const fetchPestData = async () => {
       },
     };
 
-    const response = await fetch(`${API_BASE_URL}/get-pests-list`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-pests-list`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -526,7 +528,7 @@ export async function postPestActivity(
       },
     ];
     console.log("Payload in pest activity found", payload);
-    const response = await fetch(`${API_BASE_URL}/add-pest-found-details`, {
+    const response = await fetch(`${API_BASE_URL}/v1/add-pest-found-details`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -556,7 +558,7 @@ export async function postPestActivity(
 //       service_id: "4",
 //     };
 
-//     const response = await fetch(`${API_BASE_URL}/get-items`, {
+//     const response = await fetch(`${API_BASE_URL}/v1/get-items`, {
 //       method: "POST",
 //       headers: {
 //         "Content-Type": "application/json",
@@ -607,7 +609,7 @@ export const fetchGetPestChemicalItems = async () => {
       },
     };
     const response = await fetch(
-      `${API_BASE_URL}/get-chemicals-used-for-pest
+      `${API_BASE_URL}/v2/get-chemicals-used-for-pest
 `,
       {
         method: "POST",
@@ -634,7 +636,7 @@ export const insertChemicalsUsedForPest = async (payload: any) => {
   try {
     const userData = getUserData();
     const response = await fetch(
-      `${API_BASE_URL}/insert-chemicals-used-for-pest`,
+      `${API_BASE_URL}/v1/insert-chemicals-used-for-pest`,
       {
         method: "POST",
         headers: {
@@ -665,7 +667,7 @@ export const getVisitExecutionDetails = async (visitId: string) => {
     };
 
     const response = await fetch(
-      `${API_BASE_URL}/get-visit-execution-details-v2
+      `${API_BASE_URL}/v1/get-visit-execution-details-v2
 `,
       {
         method: "POST",
@@ -705,7 +707,7 @@ export const createCallOut = async (payloadObj: any) => {
   const payload = payloadObj;
   try {
     const response = await fetch(
-      `${API_BASE_URL}/create-callout
+      `${API_BASE_URL}/v1/create-callout
 `,
       {
         method: "POST",
@@ -738,7 +740,7 @@ export const createTask = async (payloadObj: any) => {
   const payload = payloadObj;
   try {
     const response = await fetch(
-      `${API_BASE_URL}/create-my-task
+      `${API_BASE_URL}/v1/create-my-task
 `,
       {
         method: "POST",
@@ -759,7 +761,38 @@ export const createTask = async (payloadObj: any) => {
     console.error("Error in Visit status count:", error);
   }
 };
-
+export const createOtherTask = async (payloadObj: any) => {
+  console.log(payloadObj);
+  const userDataString = localStorage.getItem("userData");
+  if (!userDataString) {
+    console.error("User data is not available");
+    throw new Error("User Data Not available");
+  }
+  const userData = JSON.parse(userDataString);
+  const payload = payloadObj;
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/v1/create-other-task
+`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData?.api_token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (response.ok) {
+      return await response.json(); // Ensure response data is returned
+    } else {
+      console.error("Failed to fetch Visit Status Count:", response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in Visit status count:", error);
+  }
+};
 export const treatmentTypes = async (serviceId: any) => {
   const userData = getUserData();
   try {
@@ -767,7 +800,7 @@ export const treatmentTypes = async (serviceId: any) => {
       service_id: serviceId,
     };
 
-    const response = await fetch(`${API_BASE_URL}/get-treatment-types`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-treatment-types`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -797,7 +830,7 @@ export const pestReported = async (serviceId: any) => {
       service_id: serviceId,
     };
 
-    const response = await fetch(`${API_BASE_URL}/get-pests-reported`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-pests-reported`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -823,7 +856,7 @@ export const pestReported = async (serviceId: any) => {
 export const customerList = async () => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/get-customers`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-customers`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -851,7 +884,7 @@ export const customerLocations = async (customerId: any) => {
     const requestBody = {
       customer: customerId,
     };
-    const response = await fetch(`${API_BASE_URL}/get-customer-location`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-customer-location`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -883,7 +916,7 @@ export const customerServices = async (customerId: any) => {
     const requestBody = {
       customer_id: customerId,
     };
-    const response = await fetch(`${API_BASE_URL}/get-services-by-customer`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-services-by-customer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -911,7 +944,7 @@ export const customerServices = async (customerId: any) => {
 export const serviceList = async () => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/get-services`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-services`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -936,7 +969,7 @@ export const serviceList = async () => {
 export const timeDuration = async () => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/time-duration`, {
+    const response = await fetch(`${API_BASE_URL}/v1/time-duration`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -961,7 +994,7 @@ export const timeDuration = async () => {
 export const customerType = async () => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/get-clienttypes`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-clienttypes`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -986,7 +1019,7 @@ export const customerType = async () => {
 export const getAreas = async () => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/get-areas`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-areas`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -1011,7 +1044,7 @@ export const getAreas = async () => {
 export const addCustomer = async (body: any) => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/add-customer`, {
+    const response = await fetch(`${API_BASE_URL}/v1/add-customer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1039,7 +1072,7 @@ export const multiRecommendations = async () => {
   const userData = getUserData();
   try {
     const response = await fetch(
-      `${API_BASE_URL}/get-recommendations-list
+      `${API_BASE_URL}/v1/get-recommendations-list
 `,
       {
         method: "GET",
@@ -1063,7 +1096,7 @@ export const multiRecommendations = async () => {
 export const submitRecommendations = async (requestBody: any) => {
   try {
     const userData = getUserData();
-    const response = await fetch(`${API_BASE_URL}/add-pest-recommendation`, {
+    const response = await fetch(`${API_BASE_URL}/v1/add-pest-recommendation`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1097,7 +1130,7 @@ export const fetchQuestionnaire = async () => {
   try {
     const userData = getUserData();
     const response = await fetch(
-      `${API_BASE_URL}/get-work-done-questionnaire`,
+      `${API_BASE_URL}/v1/get-work-done-questionnaire`,
       {
         method: "POST",
         headers: {
@@ -1123,7 +1156,7 @@ export const fetchQuestionnaire = async () => {
 export const submitWorkDoneDetail = async (requestBody: any) => {
   try {
     const userData = getUserData();
-    const response = await fetch(`${API_BASE_URL}/add-work-done-detail`, {
+    const response = await fetch(`${API_BASE_URL}/v1/add-work-done-detail`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1148,7 +1181,7 @@ export const submitFollowupFeedback = async (requestBody: any) => {
   try {
     const userData = getUserData();
     const response = await fetch(
-      `${API_BASE_URL}/add-followup-feedback-details`,
+      `${API_BASE_URL}/v1/add-followup-feedback-details`,
       {
         method: "POST",
         headers: {
@@ -1174,7 +1207,7 @@ export const fetchvisitExecutionpreview = async (requestBody: any) => {
   try {
     const userData = getUserData();
     const response = await fetch(
-      `${API_BASE_URL}/get-visit-execution-details-v2`,
+      `${API_BASE_URL}/v1/get-visit-execution-details-v2`,
       {
         method: "POST",
         headers: {
@@ -1200,7 +1233,7 @@ export const getvistexecutionApi = async (requestBody: any) => {
   try {
     const userData = getUserData();
     const response = await fetch(
-      `${API_BASE_URL}/get-visit-execution-details-v2`,
+      `${API_BASE_URL}/v1/get-visit-execution-details-v2`,
       {
         method: "POST",
         headers: {
@@ -1225,7 +1258,7 @@ export const getvistexecutionApi = async (requestBody: any) => {
 export const getvisittraveldetails = async (requestBody: any) => {
   try {
     const userData = getUserData();
-    const response = await fetch(`${API_BASE_URL}/get-visit-travel-data`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-visit-travel-data`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1250,7 +1283,7 @@ export const getvisittraveldetails = async (requestBody: any) => {
 export const requestMaterials = async (materialData: any) => {
   const userData = getUserData();
   try {
-    const response = await fetch(`${API_BASE_URL}/request-stock`, {
+    const response = await fetch(`${API_BASE_URL}/v1/request-stock`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1278,7 +1311,7 @@ export const requestMaterials = async (materialData: any) => {
 // export const taskRescheduleData = async (requestBody: any) => {
 //   try {
 //     const userData = getUserData();
-//     const response = await fetch(`${API_BASE_URL}/reschedule-visit`, {
+//     const response = await fetch(`${API_BASE_URL}/v1/reschedule-visit`, {
 //       method: "POST",
 //       headers: {
 //         "Content-Type": "application/json",

@@ -73,7 +73,13 @@ useEffect(()=>{
         const data = await retrieveAvailableTechincianBasedOnNetwork();
         const responseData = data; // Assume data is already in the correct format
         console.log("Fetched data:", responseData);
-        setIdealTechnicians(responseData.data || responseData); // Ensure data is in correct format
+        const sortedUsers = responseData.data.sort((a: any, b:any) => {
+          // Place 'idle' at the top
+          if (a.work_status === 'idle' && b.work_status !== 'idle') return -1;
+          if (a.work_status !== 'idle' && b.work_status === 'idle') return 1;
+          return 0;
+        });
+        setIdealTechnicians(sortedUsers); // Ensure data is in correct format
       } catch (error) {
         console.error("Error fetching ideal technicians:", error);
         toast.error("Server not responding. Please try again later.");
@@ -203,12 +209,14 @@ useEffect(()=>{
             <IonList lines="full" className="ion-list-item listItemAll">
               {filteredTechnicians.map((technician, index) => (
                 <IonItem key={index}>
-                  <IonThumbnail slot="start" className="thumbnailIcon">
+                  <IonThumbnail slot="start" className={
+                  technician.work_status === 'idle' ? "thumbnailIcon online": "thumbnailIcon busy"}>
                     <IonImg
                       src={
                         technician.avatar || "assets/images/technician-icon.svg"
                       }
                     />
+                     <span className="status-dot"></span>
                   </IonThumbnail>
                   <IonText className="listCont">
                     <h3>
@@ -217,6 +225,7 @@ useEffect(()=>{
                     <h2>{technician.mobile_no}</h2>
                   </IonText>
                   <IonCheckbox
+                    disabled = {technician.work_status !== 'idle'}
                     checked={technician.isSelected}
                     onIonChange={() => handleCheckboxChange(technician)}
                     className="listContRight"

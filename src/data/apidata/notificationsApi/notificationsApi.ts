@@ -30,7 +30,7 @@ export const fetchNotifications = async () => {
       },
     };
 
-    const response = await fetch(`${API_BASE_URL}/get-notifications`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-notifications`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export const updateNotificationStatus = async (
     };
 
     const response = await fetch(
-      `${API_BASE_URL}/update-push-notification-status`,
+      `${API_BASE_URL}/v1/update-push-notification-status`,
       {
         method: "POST",
         headers: {

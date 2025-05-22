@@ -15,7 +15,7 @@ export const appSettings = async () => {
   await getNetworkStatus();
   try {
     // const device_id = "abc123testdevid";
-    const response = await fetch(`${API_BASE_URL}/get-settings`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-settings`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -36,7 +36,7 @@ export const loginApi = async (username: string, password: string,app_name : any
     if (!device_id) device_id = "web-app";
 
     // const device_id = "abc123testdevid";
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${API_BASE_URL}/v1/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export const userCheckIn = async () => {
       location: `${pos.coords.latitude},${pos.coords.longitude}`,
     };
 
-    const response = await fetch(`${API_BASE_URL}/user-attendance`, {
+    const response = await fetch(`${API_BASE_URL}/v1/user-attendance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -123,7 +123,7 @@ export const postDataToLocationTracking = async (
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/technician-location-tracking`,
+      `${API_BASE_URL}/v1/technician-location-tracking`,
       {
         method: "POST",
         headers: {
@@ -166,7 +166,7 @@ export const handleCheckOut = async () => {
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}/user-attendance`, {
+    const response = await fetch(`${API_BASE_URL}/v1/user-attendance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -196,7 +196,7 @@ export const handleCheckOut = async () => {
 export const changePasswordApi = async (requestBody: any) => {
   try {
     const userData = getUserData();
-    const response = await fetch(`${API_BASE_URL}/change-password`, {
+    const response = await fetch(`${API_BASE_URL}/v1/change-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -231,7 +231,7 @@ export const userCheckIns = async (userData: any) => {
       location: `${pos.coords.latitude},${pos.coords.longitude}`,
     };
 
-    const response = await fetch(`${API_BASE_URL}/user-attendance`, {
+    const response = await fetch(`${API_BASE_URL}/v1/user-attendance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

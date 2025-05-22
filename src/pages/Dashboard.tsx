@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
               case "completed":
                 setCompletedTasks(Number(status.status_count));
                 break;
-              case "expiry":
+              case "expired":
                 setExpiredTasks(Number(status.status_count));
                 break;
 

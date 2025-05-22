@@ -29,26 +29,31 @@ let syncstatus = {
 // ==================================otx-task===========================================
 
 const getOnGoingNPendingTasks = async (
-  statusArray: Array<any>,
+  statusArray: string[],
   lat: number,
-  long: number
+  long: number,
+  search : string,
+  page : any
 ) => {
   if (lat !== null && long !== null) {
     let consolidatedData: Array<any> = [];
-
+    console.log("statusArray=----",statusArray)
     await fetchTaskData(
-      [], //TODO: Remove Hardcoding, use from param
+      statusArray, //TODO: Remove Hardcoding, use from param
       lat,
-      long
+      long,
+      search,
+      page
     )
       .then((response) => {
         if (response && response.success) {
+          console.log(response);
           const sortedData = response.data.sort(
             (a: any, b: any) =>
               new Date(a.created_on).getTime() -
               new Date(b.created_on).getTime()
           );
-          consolidatedData = sortedData;
+          consolidatedData = response;
         } else {
           console.error("Error:", response?.message);
         }
@@ -61,7 +66,7 @@ const getOnGoingNPendingTasks = async (
   }
 };
 
-const fetchTaskListFromDB = async (statusArray: Array<any>) => {
+const fetchTaskListFromDB = async (statusArray: any) => {
   console.log("fetchTaskListFromDB");
   try {
     const localData = await storage.get("md-task-list");
@@ -77,11 +82,13 @@ const fetchTaskListFromDB = async (statusArray: Array<any>) => {
 };
 
 export const retrieveNetworkTasks = async (
-  statusArray: Array<any>,
+  statusArray: any,
   lat: number,
-  long: number
+  long: number,
+  search : string,
+  page : any
 ) => {
-  console.log("retrieveNetworkTasks : Start ");
+  console.log("statusArray", statusArray);
   // GET NW STATUS
   let nwStatus = await Network.getStatus();
   console.log("NETWORK OVERALL STATUS = ", nwStatus);
@@ -91,7 +98,7 @@ export const retrieveNetworkTasks = async (
   if (nwStatus.connected) {
     // TODO: Get sync status from ionic-storage
     console.log("retrieveNetworkTasks : NW ONLINE ");
-    return getOnGoingNPendingTasks(statusArray, lat, long);
+    return getOnGoingNPendingTasks(statusArray, lat, long,search,page);
   } else {
     console.log("retrieveNetworkTasks : NW OFFLINE  ");
     return fetchTaskListFromDB(statusArray);
@@ -517,7 +524,7 @@ export const fetchPestActivityFromDB = async () => {
 //       },
 //     };
 
-//     const response = await fetch(`${API_BASE_URL}/get-pests-list`, {
+//     const response = await fetch(`${API_BASE_URL}/v1/get-pests-list`, {
 //       method: "POST",
 //       headers: {
 //         "Content-Type": "application/json",
@@ -561,7 +568,7 @@ const fetchpestActivityfromApi = async () => {
       visit_id: visitId, // Use the visit_id in the request body
     };
 
-    const response = await fetch(`${API_BASE_URL}/get-pests-reported-by-visit`, {
+    const response = await fetch(`${API_BASE_URL}/v2/get-pests-reported-by-visit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -644,7 +651,7 @@ export const retrieveChemicalUsedfromDB = async () => {
 //     service_id: "4",
 //   };
 
-//   const response = await fetch(`${API_BASE_URL}/get-items`, {
+//   const response = await fetch(`${API_BASE_URL}/v1/get-items`, {
 //     method: "POST",
 //     headers: {
 //       "Content-Type": "application/json",
@@ -704,7 +711,7 @@ export const fetchChemicalUseddataFromApi = async () => {
     };
 
     const response = await fetch(
-      `${API_BASE_URL}/get-chemicals-used-for-pest
+      `${API_BASE_URL}/v2/get-chemicals-used-for-pest
 `,
       {
         method: "POST",
@@ -769,7 +776,7 @@ const fetchRecommendationsFromServer = async () => {
   const userData = getUserData();
   try {
     const response = await fetch(
-      `${API_BASE_URL}/get-recommendations-list
+      `${API_BASE_URL}/v1/get-recommendations-list
 `,
       {
         method: "GET",

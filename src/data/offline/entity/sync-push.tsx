@@ -68,7 +68,7 @@ export const syncPush = async () => {
         switch (otx) {
           case task_tx_steps.taskStart:
             // Define URL, create headers, post data
-            let urlStart = `${API_BASE_URL}/task-initiate`;
+            let urlStart = `${API_BASE_URL}/v1/task-initiate`;
             let payloadStart = await storage.get("otx-task-start-" + taskId);
             console.log("payloadStart----------------->", payloadStart);
             let pushStatusStart = await httpPostRequest(urlStart, payloadStart);
@@ -93,7 +93,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.attendance:
-            let urlAttendance = `${API_BASE_URL}/add-team-attendance`;
+            let urlAttendance = `${API_BASE_URL}/v1/add-team-attendance`;
             let payloadAttendance = await storage.get(
               "otx-teamAttendance-" + taskId
             );
@@ -127,7 +127,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.startTravel:
-            let urlStartTravel = `${API_BASE_URL}/task-initiate`;
+            let urlStartTravel = `${API_BASE_URL}/v1/task-initiate`;
             let payloadStartTravel = await storage.get(
               "otx-Start-TrackTime-" + taskId
             );
@@ -163,7 +163,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.endTravel:
-            let urlEndTravel = `${API_BASE_URL}/task-initiate`;
+            let urlEndTravel = `${API_BASE_URL}/v1/task-initiate`;
             let payloadEndTravel = await storage.get(
               "otx-End-TrackTime-" + taskId
             );
@@ -194,7 +194,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.pestActivity:
-            let urlPestActivity = `${API_BASE_URL}/add-pest-found-details`;
+            let urlPestActivity = `${API_BASE_URL}/v1/add-pest-found-details`;
             let payloadPestActivity = await storage.get(
               "otx-pestData-" + taskId
             );
@@ -230,7 +230,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.chemsUsed:
-            let urlChemsUsed = `${API_BASE_URL}/insert-chemicals-used-for-pest`;
+            let urlChemsUsed = `${API_BASE_URL}/v1/insert-chemicals-used-for-pest`;
             let payloadChemsUsed = await storage.get("otx-chem-used-" + taskId);
             console.log("payloadChemsUsed----------------->", payloadChemsUsed);
             let pushStatusChemsUsed = await httpPostRequest(
@@ -259,7 +259,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.recommendations:
-            let urlRecommendations = `${API_BASE_URL}/add-pest-recommendation`;
+            let urlRecommendations = `${API_BASE_URL}/v1/add-pest-recommendation`;
             let payloadRecommendations = await storage.get(
               "otx-pest-recommendation-" + taskId
             );
@@ -295,7 +295,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.workDone:
-            let urlWorkDone = `${API_BASE_URL}/add-work-done-detail`;
+            let urlWorkDone = `${API_BASE_URL}/v1/add-work-done-detail`;
             let payloadWorkDone = await storage.get("otx-work-done-" + taskId);
             console.log("payloadWorkDone----------------->", payloadWorkDone);
             let pushStatusWorkDone = await httpPostRequest(
@@ -323,7 +323,7 @@ export const syncPush = async () => {
             break;
 
           case task_tx_steps.feedbackFollowup:
-            let urlFeedbackFollowup = `${API_BASE_URL}/add-followup-feedback-details`;
+            let urlFeedbackFollowup = `${API_BASE_URL}/v1/add-followup-feedback-details`;
             let payloadFeedbackFollowup = await storage.get(
               "otx-followup-feedback-" + taskId
             );
@@ -358,7 +358,7 @@ export const syncPush = async () => {
             break;
 
             case task_tx_steps.PauseResume:
-            let urlPauseResume = `${API_BASE_URL}/visit-time-intervals`;
+            let urlPauseResume = `${API_BASE_URL}/v1/visit-time-intervals`;
             let payloadPauseResume = await storage.get("otx-task-PauseResume-" + taskId);
             let pushStatusPauseResume = await httpPostRequest(
               urlPauseResume,

@@ -1472,7 +1472,7 @@ export const updateInterval = async (visitId: any, isPaused: any) => {
       console.log("intervals--------> online");
       // If online
       const response = await fetch(
-        `${API_BASE_URL}/visit-time-intervals`,
+        `${API_BASE_URL}/v1/visit-time-intervals`,
         {
           method: "POST",
           headers: {

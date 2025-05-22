@@ -2359,7 +2359,7 @@ ion-header {
     min-height: 56px;
     width: 100%;
     min-width: 100%;
-    padding-right: 15px;
+    padding: 0px 15px;
     --border-width: 0px;
   }
 
@@ -3171,7 +3171,7 @@ ion-alert {
 
 .stockIonSegmentButton {
   ion-segment-button {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
   }
 }
@@ -3789,4 +3789,28 @@ ion-item.outofstock{
     padding-bottom: 0px;
     color: #f97e7e;
   }
+}
+.stockInputAddDisabled{
+  pointer-events: none;
+  opacity: 0.5;
+}
+.status-container {
+  position: relative;
+  display: inline-block;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 15px;
+  left: 25px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: green;
+  border: 2px solid white;
+}
+
+/* Modify dot color based on status */
+.busy .status-dot {
+  background-color: red;
 }

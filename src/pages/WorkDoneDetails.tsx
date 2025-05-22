@@ -35,6 +35,7 @@ import {
 } from "../data/apidata/taskApi/taskDataApi";
 import { retrieveQuestionnaireBasedOnNetwork } from "../data/offline/entity/DataRetriever";
 import { savePestWorkdoneBasedOnNetwork } from "../data/offline/entity/DataTransfer";
+import { getCurrentLocation } from "../data/providers/GeoLocationProvider";
 
 interface FormData {
   visit_id: string;
@@ -178,9 +179,9 @@ const WorkDoneDetails: React.FC = () => {
           descriptive: descriptive,
         };
       });
-
-      const latitude = location.latitude; // Assuming location is an object with latitude
-      const longitude = location.longitude; // Assuming location is an object with longitude
+      let geolocation: any = await getCurrentLocation();
+      const latitude = geolocation.coords.latitude; // Assuming location is an object with latitude
+      const longitude = geolocation.coords.longitude; // Assuming location is an object with longitude
       const visit_id = formData.visit_id; // Assuming formData is an object with visit_id
 
       console.log(workDone);

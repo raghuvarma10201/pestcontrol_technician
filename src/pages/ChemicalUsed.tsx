@@ -429,7 +429,7 @@ const ChemicalUsed = () => {
         // );
 
         const geoloc = await getCurrentLocation();
-
+        console.log(geoloc);
         const activeTaskStr = localStorage.getItem("activeTaskData");
         if (!activeTaskStr) {
           throw new Error("Task Data not available");

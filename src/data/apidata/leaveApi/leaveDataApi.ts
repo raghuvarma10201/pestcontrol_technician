@@ -18,7 +18,7 @@ export const fetchLeaveDetails = async () => {
       page_limit: 5,
     };
 
-    const response = await fetch(`${API_BASE_URL}/get-leave-details`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-leave-details`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export const fetchLeaveTypes = async () => {
   const userData = JSON.parse(userDataString);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/get-leave-types`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-leave-types`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export const submitLeaveApply = async (data: any) => {
   const userData = JSON.parse(userDataString);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/leave-apply`, {
+    const response = await fetch(`${API_BASE_URL}/v1/leave-apply`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -127,7 +127,7 @@ export const fetchAvailableLeaves = async () => {
   const userData = JSON.parse(userDataString);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/get-available-leaves`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-available-leaves`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

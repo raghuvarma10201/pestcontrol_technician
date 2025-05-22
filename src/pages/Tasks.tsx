@@ -22,6 +22,8 @@ import {
   IonSegmentButton,
   IonBadge,
   IonText,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
 } from "@ionic/react";
 import CommonHeader from "../components/CommonHeader";
 import TaskComponent from "../components/TaskComponent";
@@ -42,6 +44,7 @@ import {
 import { retrieveNetworkTasksDetails } from "../data/offline/entity/DataRetriever";
 import GoTop from "../components/GoTop";
 import { Storage } from "@capacitor/storage";
+import { getCurrentLocation } from "../data/providers/GeoLocationProvider";
 
 
 const Tasks: React.FC = () => {
@@ -61,43 +64,76 @@ const Tasks: React.FC = () => {
   const [filterCriteria, setFilterCriteria] = useState({
     service_date: "",
     priority: "",
-    "tbl_visits.service_status": ["14", "17", "33"],
+    service_status: "ROUTINE_ON_GOING | ROUTINE_PENDING",
   });
   console.log("default date string = ", getJustDate());
   const [filterselectedCriterias, setselectedFilterCriteria] = useState({
-    // service_date: getJustDate(),
-    // priority: "High",
-    // "tbl_visits.service_status": ["14", "17", "33"]
     service_date: "",
     priority: "",
-    "tbl_visits.service_status": ["14", "17", "33"],
+    service_status: "ROUTINE_ON_GOING | ROUTINE_PENDING",
   });
   const [pausedCount, setPausedCount] = useState(0);
   const [pendingOngoingCount, setPendingOngoingCount] = useState(0);
-  // const [selectedSegment, setSelectedSegment] = useState('pendingSegment');
+  const [expiredCount, setExpiredCount] = useState(0);
+  const [selectedStatus, setSelectedStatus] = useState<string>("ROUTINE_ON_GOING | ROUTINE_PENDING");
   const [selectedPriority, setSelectedPriority] = useState("Medium");
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [page, setPage] = useState(0);
+
+  const effectRan = useRef(false);
 
   useEffect(() => {
-    getOnGoingNPendingTasks();
-  }, [location]);
+    if (effectRan.current === false) {
+      getOnGoingNPendingTasks('', filterCriteria);
+      effectRan.current = true;
+    }
+  }, []);
 
   useEffect(() => {
-    applySearch();
-  }, [searchQuery]);
-  // }, [searchQuery, filterCriteria, taskData]);
+    //getOnGoingNPendingTasks('', selectedStatus);
+  }, [selectedSegment]);
 
-  const getOnGoingNPendingTasks = async () => {
-    if (location?.latitude && location?.longitude) {
+  const getOnGoingNPendingTasks = async (searchText: any, status: any) => {
+
+    let geolocation: any = await getCurrentLocation();
+
+    const mapToObject = (map: Map<string, any>) =>
+      Object.fromEntries(map.entries());
+    const filterMap = new Map<string, any>();
+    // Apply individual filter conditions
+    if (filterCriteria.priority !== "") {
+      filterMap.set("tbl_visits.priority", filterCriteria.priority);
+    }
+    if (filterCriteria.service_date !== "") {
+      filterMap.set("tbl_visits.service_date", filterCriteria.service_date);
+    }
+    // Always include service_status filter
+    filterMap.set("tbl_visits.service_status", filterCriteria.service_status);
+    const convFilterCriteria = mapToObject(filterMap);
+
+    setLoading(true);
+    if (geolocation.coords.latitude && geolocation.coords.longitude) {
       let consolidatedData: Array<any> = [];
       setLoading(true);
       console.log("Fetching Task List from Tasks");
-
       // Fetch tasks with statuses 14 (pending), 17 (on-going), 33 (new status)
-      let rawTaskList = await retrieveNetworkTasks(
-        ["14", "17", "33"],
-        location.latitude,
-        location.longitude
+      let response = await retrieveNetworkTasks(
+        convFilterCriteria,
+        geolocation.coords.latitude,
+        geolocation.coords.longitude,
+        searchText,
+        page
       );
+      console.log("Responseeeeeeeeee", response);
+      let rawTaskList = response.data;
+      console.log(rawTaskList);
+      if (rawTaskList.length < 10) {
+        setHasMoreTasks(false);
+        setPage(0);
+      } else {
+        setHasMoreTasks(true)
+        setPage(prevPage => prevPage + 1);
+      }
 
       // Sort the data: Pending tasks should come first, and within each status, sort by created date descending
       let sortedData = rawTaskList.sort((a: any, b: any) => {
@@ -137,52 +173,53 @@ const Tasks: React.FC = () => {
 
       consolidatedData = sortedData;
       setLoading(false);
-      setTaskData(consolidatedData);
+      setTaskData((prevDetails: any) => [...prevDetails, ...consolidatedData]);
+      setFilteredTaskData((prevDetails: any) => [...prevDetails, ...consolidatedData]);
+      getTaskCounts(response.status_count);
+      //setTaskData(consolidatedData);
       console.log(taskData);
+    } else {
+      setLoading(false);
     }
   };
   /////////getting countof paused and pending task function///////////
-  const getTaskCounts = () => {
-    let pausedCount = 0;
-    let pendingOngoingCount = 0;
+  const getTaskCounts = (statusCountList: any) => {
+    const pendingCount = parseInt(statusCountList.find((s: any) => s.status_name === "Pending")?.service_status_count || "0");
+    const onGoingCount = parseInt(statusCountList.find((s: any) => s.status_name === "On Going")?.service_status_count || "0");
+    const completedCount = parseInt(statusCountList.find((s: any) => s.status_name === "Completed")?.service_status_count || "0");
+    const expiredCount = parseInt(statusCountList.find((s: any) => s.status_name === "Expired")?.service_status_count || "0");
+    const pausedCount = parseInt(statusCountList.find((s: any) => s.status_name === "Paused")?.service_status_count || "0");
 
-    taskData.forEach((task) => {
-      console.log("Service Status:", task.service_status);
-
-      if (task.service_status.toLowerCase() === "paused") {
-        pausedCount++;
-      } else if (
-        task.service_status === "Pending" ||
-        task.service_status === "On Going"
-      ) {
-        pendingOngoingCount++;
-      }
-    });
     setPausedCount(pausedCount);
-    setPendingOngoingCount(pendingOngoingCount);
-
-    console.log("Paused Task Count:============>", pausedCount);
-    console.log(
-      "Pending and Ongoing Task Count:=============>",
-      pendingOngoingCount
-    );
+    setPendingOngoingCount(pendingCount + onGoingCount);
+    setExpiredCount(expiredCount);
   };
   useEffect(() => {
-    getTaskCounts();
+    //getTaskCounts();
   }, [taskData]);
 
+  const segmentChange = (status: any) => {
+    filterCriteria.service_status = status;
+    setTaskData([]);
+    setFilteredTaskData([]);
+    getOnGoingNPendingTasks('', filterCriteria);
+  }
+
   useEffect(() => {
-    filterTasks(selectedSegment);
+    //filterTasks(selectedSegment);
   }, [selectedSegment, taskData]);
 
   const filterTasks = (segment: any) => {
+    setLoading(true);
     console.log("Filtering tasks for segment:", segment);
     if (segment === "pausedSegment") {
+
       const pausedTasks = taskData.filter(
         (task) => task.service_status.toLowerCase() === "paused"
       );
       console.log("Paused Tasks:", pausedTasks);
       setFilteredTaskData(pausedTasks);
+      setLoading(false);
     } else if (segment === "pendingSegment") {
       const pendingTasks = taskData.filter(
         (task) =>
@@ -191,95 +228,29 @@ const Tasks: React.FC = () => {
       );
       console.log("Pending and Ongoing Tasks:", pendingTasks);
       setFilteredTaskData(pendingTasks);
+      setLoading(false);
+    } else {
+      const expiredTasks = taskData.filter(
+        (task) => task.service_status.toLowerCase() === "expired"
+      );
+      console.log("Paused Tasks:", expiredTasks);
+      setFilteredTaskData(expiredTasks);
+      setLoading(false);
     }
-    setLoading(false);
+
   };
 
   const applyFilter = async () => {
-    let filteredData = taskData.slice();
-    // build the filter
+
     console.log("Filter Criteria:", filterCriteria);
+    // Only apply filters if criteria and location are present
     if (filterCriteria && location.latitude && location.longitude) {
-      // create a new methof to accept filter
-      // tasks array to filter criteria ["14", "17", "33"]
-      // filterCriteria["tbl_visits.service_status"] = ["14", "17", "33"]
-      let statusFilterArr = ["14", "17", "33"];
-      if (selectedSegment === "pausedSegment") {
-        statusFilterArr = ["33"];
-      } else if (selectedSegment === "pendingSegment") {
-        statusFilterArr = ["14", "17"];
-      }
-
-      const mapToObject = (map: Map<string, any>) =>
-        Object.fromEntries(map.entries());
-      const filterMap = new Map<string, any>();
-      if (filterCriteria.priority != "")
-        filterMap.set("tbl_visits.priority", filterCriteria.priority);
-      if (filterCriteria.service_date != "")
-        filterMap.set("tbl_visits.service_date", filterCriteria.service_date);
-
-      filterMap.set("tbl_visits.service_status", statusFilterArr);
-      let convFilterCriteria = mapToObject(filterMap);
-      console.log("conv filter = ", convFilterCriteria);
-      // let convFilterCriteria = {
-      //   // "tbl_visits.service_date": filterCriteria.service_date,
-      //   "tbl_visits.priority": filterCriteria.priority,
-      //   "tbl_visits.service_status": statusFilterArr
-      // }
-
-      filteredData = await retrieveNetworkFilteredTasks(
-        convFilterCriteria,
-        location.latitude,
-        location.longitude
-      );
-      // set the response
-      // handle the reset
-      console.log("Filtered Data = ", filteredData);
+      // Fetch filtered task data
+      setPage(0)
+      setTaskData([]);
+      setFilteredTaskData([]);
+      await getOnGoingNPendingTasks('', filterCriteria);
     }
-    // if (filterCriteria.date) {
-    //   console.log("Filtering by date:", filterCriteria.date);
-    //   filteredData = filteredData.filter(
-    //     (task) =>
-    //       new Date(task.service_date).toDateString() ===
-    //       new Date(filterCriteria.date).toDateString()
-    //   );
-    // }
-
-    // if (filterCriteria.priority) {
-
-    //   console.log("Filtering by priority:", filterCriteria.priority);
-    //   filteredData = filteredData.filter(
-    //     (task) => task.priority === filterCriteria.priority
-    //   );
-    // }
-    // console.log("Filtered Data:", filteredData);
-
-    setFilteredTaskData(filteredData);
-    setFilterApplied(true);
-  };
-
-  const applySearch = async () => {
-    let filteredData = taskData.slice();
-    console.log("Search Query:", searchQuery);
-    // build the filter
-    console.log("Filter Criteria:", filterCriteria);
-    if (searchQuery) {
-      filteredData = filteredData.filter(
-        (task) =>
-          (task.service_name &&
-            task.service_name
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())) ||
-          (task.address &&
-            task.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (task.reference_number &&
-            task.reference_number
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()))
-      );
-    }
-
-    setFilteredTaskData(filteredData);
   };
 
   const handleTaskClick = async (
@@ -312,8 +283,8 @@ const Tasks: React.FC = () => {
     try {
       const taskDetails = await retrieveNetworkTasksDetails(taskId);
       localStorage.setItem("activeTaskData", JSON.stringify(taskDetails));
-      await Storage.set({key: 'visit_id', value: taskId});
-      
+      await Storage.set({ key: 'visit_id', value: taskId });
+
       history.push(`/tasks/${taskId}`);
     } catch (error) {
       console.error("Error fetching task details:", error);
@@ -321,9 +292,28 @@ const Tasks: React.FC = () => {
     }
   };
 
-  const handleInput = (ev: CustomEvent) => {
+  const handleInput = async (ev: CustomEvent) => {
     const query = (ev.target as HTMLIonSearchbarElement).value!.toLowerCase();
     setSearchQuery(query);
+    if (query) {
+      setPage(0)
+      if (query.length >= 3) {
+        setTaskData([]);
+        setFilteredTaskData([]);
+        await getOnGoingNPendingTasks(query, selectedStatus);
+      } else {
+        setTaskData([]);
+        setFilteredTaskData([]);
+        await getOnGoingNPendingTasks('', selectedStatus);
+      }
+      let filteredData = taskData.slice();
+      console.log("Search Query:", query);
+    } else {
+      setPage(0)
+      setTaskData([]);
+      setFilteredTaskData([]);
+      await getOnGoingNPendingTasks('', selectedStatus);
+    }
   };
 
   const handleFilterChange = (e: CustomEvent) => {
@@ -361,34 +351,28 @@ const Tasks: React.FC = () => {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     setIsOpen(false);
     setFilterError(false);
     setFilterApplied(false);
-    // setFilterCriteria({
-    //   date: "",
-    //   priority: "",
-    // })
-
     setselectedFilterCriteria({
-      // service_date: getJustDate(),
-      // priority: "High",
-      // "tbl_visits.service_status": ["14", "17", "33"]
       service_date: "",
       priority: "",
-      "tbl_visits.service_status": ["14", "17", "33"],
+      service_status: selectedStatus,
     });
     setFilterCriteria({
-      // service_date: getJustDate(),
-      // priority: "High",
-      // "tbl_visits.service_status": ["14", "17", "33"]
       service_date: "",
       priority: "",
-      "tbl_visits.service_status": ["14", "17", "33"],
+      service_status: selectedStatus,
     });
-
-    filterTasks(selectedSegment);
-    // setSelectedPriority('');
+    setPage(0)
+    setTaskData([]);
+    setFilteredTaskData([]);
+    await getOnGoingNPendingTasks('', {
+      service_date: "",
+      priority: "",
+      service_status: selectedStatus,
+    });
   };
 
   // Create a ref for the search input
@@ -399,6 +383,11 @@ const Tasks: React.FC = () => {
     }
   };
 
+  const loadMoreTasks = async (event: CustomEvent<void>) => {
+
+    await getOnGoingNPendingTasks(searchQuery, selectedStatus);
+    (event.target as HTMLIonInfiniteScrollElement).complete();
+  };
   return (
     <IonPage>
       <CommonHeader
@@ -414,27 +403,49 @@ const Tasks: React.FC = () => {
         <IonSegment
           className="stockIonSegmentButton"
           value={selectedSegment}
-          onIonChange={(e) => setSelectedSegment(e.detail.value as string)}
+          onIonChange={(e) => {
+            const value = e.detail.value as string;
+            setSelectedSegment(value);
+
+            if (value === 'pendingSegment') {
+              setSelectedStatus("ROUTINE_ON_GOING | ROUTINE_PENDING");
+              segmentChange("ROUTINE_ON_GOING | ROUTINE_PENDING");
+
+            }
+            if (value === 'pausedSegment') {
+              setSelectedStatus("ROUTINE_PAUSED");
+              segmentChange("ROUTINE_PAUSED");
+            }
+            if (value === 'expiredSegment') {
+              setSelectedStatus("ROUTINE_EXPIRED");
+              segmentChange("ROUTINE_EXPIRED");
+            }
+          }}
         >
           <IonSegmentButton value="pendingSegment">
             <IonLabel>
               Pending{" "}
               <IonBadge slot="start">
                 {" "}
-                {selectedSegment === "pendingSegment"
-                  ? filteredTaskData.length
-                  : pendingOngoingCount}
+                {pendingOngoingCount}
               </IonBadge>
             </IonLabel>
           </IonSegmentButton>
-
           <IonSegmentButton value="pausedSegment">
             <IonLabel>
               Paused{" "}
               <IonBadge slot="start">
-                {selectedSegment === "pausedSegment"
-                  ? filteredTaskData.length
-                  : pausedCount}
+                {pausedCount}
+              </IonBadge>
+            </IonLabel>
+          </IonSegmentButton>
+
+          <IonSegmentButton value="expiredSegment">
+            <IonLabel>
+              Expired{" "}
+              <IonBadge slot="start">
+                {" "}
+                {expiredCount}
               </IonBadge>
             </IonLabel>
           </IonSegmentButton>
@@ -574,7 +585,78 @@ const Tasks: React.FC = () => {
               </IonList>
             </div>
           )}
+          {selectedSegment === "expiredSegment" && (
+            <div>
+              <IonItem
+                lines="none"
+                className="ion-item-inner ion-no-padding ion-margin-vertical"
+              >
+                <IonSearchbar
+                  ref={searchInputRef}
+                  debounce={500}
+                  onIonInput={handleInput}
+                ></IonSearchbar>
+
+                <div className="ion-float_end">
+                  <IonButton
+                    shape="round"
+                    onClick={() => setIsOpen(true)}
+                    className="roundedWhiteBtIcon ion-no-margin"
+                  >
+                    <IonImg src="assets/images/filter-icon.svg"></IonImg>
+                  </IonButton>
+                </div>
+              </IonItem>
+
+              <IonList lines="none" className="ion-list-item">
+                {!loading && filteredTaskData.length === 0 && (
+                  <p style={{ textAlign: "center", width: "100%" }}>
+                    No tasks assigned/found.
+                  </p>
+                )}
+                {filteredTaskData.length > 0 &&
+                  filteredTaskData.map((task: any, index: any) => (
+                    <IonItem
+                      key={task.id}
+                      onClick={() =>
+                        handleTaskClick(task.id, index, task.service_status)
+                      }
+                      lines="full"
+                    >
+                      <div className="task-container">
+                        <TaskComponent
+                          id={task.id}
+                          path={`/tasks/${task.id}`}
+                          title={task.service_name}
+                          subTitle={task.address}
+                          serviceDate={task.service_date}
+                          date={`${formatDate(task.created_on)}  ${formatTime(
+                            task.created_on
+                          )}`}
+                          time={task.preffered_time}
+                          reference_Number={task.reference_number}
+                          priority={task.priority}
+                          distance={task.distance}
+                          status={task.service_status}
+                          imgSrc="/assets/images/location-icon.svg"
+                        />
+                      </div>
+                    </IonItem>
+                  ))}
+              </IonList>
+            </div>
+          )}
         </div>
+        <IonInfiniteScroll
+          threshold="100px"
+          onIonInfinite={loadMoreTasks}
+          disabled={!hasMoreTasks}
+        >
+          <IonInfiniteScrollContent
+            loadingSpinner="bubbles"
+            loadingText="Loading more materials..."
+          ></IonInfiniteScrollContent>
+        </IonInfiniteScroll>
       </IonContent>
       <IonModal className="ion-bottom-modal filterModal" isOpen={isOpen}>
         <IonHeader>

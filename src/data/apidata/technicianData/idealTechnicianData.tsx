@@ -24,13 +24,13 @@ export const fetchIdealTechnicians = async (): Promise<Technician[]> => {
       "email_id",
       "mobile_no",
       "avatar",
+      "work_status"
     ],
     order_by: {
       created_on: "asc",
     },
     filters: {
-      last_action: "1",
-      work_status: "idle",
+
     },
     pagination: {
       limit: "10",
@@ -38,7 +38,7 @@ export const fetchIdealTechnicians = async (): Promise<Technician[]> => {
     },
   };
   try {
-    const response = await fetch(`${API_BASE_URL}/get-ideal-technicians`, {
+    const response = await fetch(`${API_BASE_URL}/v1/get-ideal-technicians`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,7 +99,7 @@ export const submitTechnicianData = async (
     },
   ];
   try {
-    const response = await fetch(`${API_BASE_URL}/add-team-attendance`, {
+    const response = await fetch(`${API_BASE_URL}/v1/add-team-attendance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

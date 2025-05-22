@@ -40,6 +40,7 @@ import {
   customerType,
   getAreas,
   addCustomer,
+  createOtherTask,
 } from "../data/apidata/taskApi/taskDataApi";
 import { toast, ToastContainer } from "react-toastify";
 import AddressSearch from "../components/AddressSearch";
@@ -67,8 +68,11 @@ const CreateTask: React.FC = () => {
   const [customerTypeDetails, setCustomerTypeDetails] = useState<any[]>([]);
   const [areasDetails, setAreasDetails] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [duration, setDuration] = useState<string>(''); // declare duration state
+  const [hours, setHours] = useState<number>(0);
+  const [minutes, setMinutes] = useState<number>(0);
+  const [totalMinutes, setTotalMinutes] = useState<number>(0);
 
-  
 
   const generateRandomNumber = () => {
     const now = new Date();
@@ -89,8 +93,11 @@ const CreateTask: React.FC = () => {
     service_id: "",
     service_date: "",
     preferred_time: "",
+    time_duration: 0,
     service_duration: "",
     priority: "",
+    treatmentId: "",
+    treatmentReason: "",
     selectedTreatments: {} as { [key: string]: string },
     selectedPests: {} as { [key: string]: string },
     customerId: "",
@@ -109,12 +116,52 @@ const CreateTask: React.FC = () => {
 
   const validationSchema = Yup.object().shape({
     title: Yup.string().required("Task name is required."),
-    reference_number: Yup.string().required("Transaction Id is required."),
+    reference_number: Yup.string().when('service_id', (service_id: any, schema) => {
+      return Array.isArray(service_id) && !service_id.includes('9')
+        ? schema.required('Transaction Id is required.')
+        : schema.notRequired();
+    }),
     service_id: Yup.string().required("Task type is required."),
+    treatmentId: Yup.string().when('service_id', (service_id: any, schema) => {
+      return Array.isArray(service_id) && service_id.includes('9')
+        ? schema.required('Other Type is required')
+        : schema.notRequired();
+    }),
+    time_duration: Yup.string().when('service_id', (service_id: any, schema) => {
+      return Array.isArray(service_id) && service_id.includes('9')
+        ? schema
+          .required('Time duration is required')
+          .test(
+            'greater-than-zero',
+            'Time duration must be greater than 0',
+            (value) => {
+              const numericValue = Number(value);
+              return !isNaN(numericValue) && numericValue > 0;
+            }
+          )
+        : schema.notRequired();
+    }),
+    treatmentReason: Yup.string().when('service_id', (service_id: any, schema) => {
+      return Array.isArray(service_id) && service_id.includes('9')
+        ? schema.required('Comments is required')
+        : schema.notRequired();
+    }),
     service_date: Yup.string().required("Task date is required."),
-    preferred_time: Yup.string().required("Preferred time is required."),
-    service_duration: Yup.string().required("Please select the duration."),
-    priority: Yup.string().required("Please select the priority."),
+    preferred_time: Yup.string().when('service_id', (service_id: any, schema) => {
+      return Array.isArray(service_id) && !service_id.includes('9')
+        ? schema.required('Preferred time is required')
+        : schema.notRequired();
+    }),
+    service_duration: Yup.string().when('service_id', (service_id: any, schema) => {
+      return Array.isArray(service_id) && !service_id.includes('9')
+        ? schema.required('Please select the duration.')
+        : schema.notRequired();
+    }),
+    priority: Yup.string().when('service_id', (service_id: any, schema) => {
+      return Array.isArray(service_id) && !service_id.includes('9')
+        ? schema.required('Please select the priority.')
+        : schema.notRequired();
+    })
   });
 
   const custoemrvalidation = Yup.object().shape({
@@ -293,13 +340,23 @@ const CreateTask: React.FC = () => {
       getPestsReported(value);
 
       setFormData((prev) => ({ ...prev, customerLocId: "" }));
+      console.log(formData);
     }
+    if (name === "treatmentId") {
 
+    }
     if (name === "customerId") {
       getCustomerLocations(value);
       // Reset the customerLocId when a new customer is selected
       setFormData((prev) => ({ ...prev, customerLocId: "" }));
     }
+  };
+  // Update total minutes when hours or minutes change
+  const updateTotalMinutes = (newHours: number, newMinutes: number) => {
+    const totalMin = newHours * 60 + newMinutes;
+    setTotalMinutes(newHours * 60 + newMinutes);
+    setFormData((prev) => ({ ...prev, time_duration: totalMin }));
+    console.log(newHours * 60 + newMinutes);
   };
   const formatPhoneNumber = (e: any) => {
     console.log(e);
@@ -309,7 +366,9 @@ const CreateTask: React.FC = () => {
     }
   };
   const handleTreatmentChange = (event: any) => {
+    console.log(event.target);
     const { value, checked } = event.target;
+    console.log(value);
     setFormData((prev) => {
       const updatedSelectedTreatments = { ...prev.selectedTreatments };
       if (checked) {
@@ -376,10 +435,92 @@ const CreateTask: React.FC = () => {
     setExistingNewCustomer(true);
   };
 
-  const onSubmit = (values: any) => {
-    setFormData((prev) => ({ ...prev, ...values }));
-    setTaskForm(false);
-    setTreatmentType(true);
+  const onSubmit = async (values: any) => {
+    console.log(values);
+    if (values.service_id === '9') {
+      console.log('Need API to Proceed');
+      const requestBody = {
+        task_name: values.title,
+        task_type: values.service_id,
+        other_type: values.treatmentId,
+        comments: values.treatmentReason,
+        task_date: values.service_date,//only date
+        task_duration: values.time_duration,//In Minutes
+        is_productive_hours: 1 //1,0
+      }
+      console.log(requestBody);
+      try {
+        const response = await createOtherTask(requestBody);
+        console.log(response);
+        if (response && response.success) {
+         
+          setFormData({
+            title: "",
+            reference_number: "",
+            service_id: "",
+            service_date: "",
+            preferred_time: "",
+            time_duration: 0,
+            service_duration: "",
+            priority: "",
+            treatmentId: "",
+            treatmentReason: "",
+            selectedTreatments: {},
+            selectedPests: {},
+            customerId: "",
+            customerLocId: "",
+          });
+          setTaskForm(true);
+          setTreatmentType(false);
+          setCustomerDataPage(false);
+          toast.success(response.message);
+          history.push("/tasks");
+        } else {
+          // Handle error messages
+          const errorData = response.data[0];
+          if (errorData.message && typeof errorData.message === "object") {
+            // Loop through all error fields
+            Object.entries(errorData.message).forEach(([field, errors]) => {
+              if (Array.isArray(errors)) {
+                errors.forEach((error) => toast.error(`${field}: ${error}`));
+              } else if (typeof errors === "string") {
+                toast.error(`${field}: ${errors}`);
+              }
+            });
+          } else if (typeof errorData.message === "string") {
+            toast.error(errorData.message);
+          } else {
+            toast.error("An unknown error occurred.");
+          }
+        }
+      } catch (error: any) {
+        console.error("Error creating task:", error);
+        if (error.response && error.response.data && error.response.data[0]) {
+          const errorData = error.response.data[0];
+          if (errorData.message && typeof errorData.message === "object") {
+            // Loop through all error fields
+            Object.entries(errorData.message).forEach(([field, errors]) => {
+              if (Array.isArray(errors)) {
+                errors.forEach((error) => toast.error(`${field}: ${error}`));
+              } else if (typeof errors === "string") {
+                toast.error(`${field}: ${errors}`);
+              }
+            });
+          } else if (typeof errorData.message === "string") {
+            toast.error(errorData.message);
+          } else {
+            toast.error("An unknown error occurred.");
+          }
+        } else {
+          toast.error("Network error or server is not responding.");
+        }
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, ...values }));
+      setTaskForm(false);
+      setTreatmentType(true);
+    }
+
   };
 
   const handleFinalSubmit = async () => {
@@ -410,8 +551,11 @@ const CreateTask: React.FC = () => {
           service_id: "",
           service_date: "",
           preferred_time: "",
+          time_duration: 0,
           service_duration: "",
           priority: "",
+          treatmentId: "",
+          treatmentReason: "",
           selectedTreatments: {},
           selectedPests: {},
           customerId: "",
@@ -540,8 +684,11 @@ const CreateTask: React.FC = () => {
       service_id: "",
       service_date: "",
       preferred_time: "",
+      time_duration: 0,
       service_duration: "",
       priority: "",
+      treatmentId: "",
+      treatmentReason: "",
       selectedTreatments: {},
       selectedPests: {},
       customerId: "",
@@ -607,30 +754,32 @@ const CreateTask: React.FC = () => {
                           <ErrorMessage name="title" />
                         </IonText>
                       )}
-
-                      <IonLabel className="ion-label">
-                        Transaction Id<IonText>*</IonText>
-                      </IonLabel>
-                      <IonItem lines="none">
-                        <Field
-                          name="reference_number"
-                          placeholder="Please Enter Transaction Id"
-                          type="text"
-                          className={
-                            touched.reference_number && errors.reference_number
-                              ? "custom-form-control is-invalid"
-                              : "custom-form-control"
-                          }
-                          value={formData.reference_number}
-                          onChange={handleInputChange}
-                        />
-                      </IonItem>
-                      {touched.reference_number && errors.reference_number && (
-                        <IonText color="danger">
-                          <ErrorMessage name="reference_number" />
-                        </IonText>
+                      {formData.service_id !== '9' && (
+                        <>
+                          <IonLabel className="ion-label">
+                            Transaction Id<IonText>*</IonText>
+                          </IonLabel>
+                          <IonItem lines="none">
+                            <Field
+                              name="reference_number"
+                              placeholder="Please Enter Transaction Id"
+                              type="text"
+                              className={
+                                touched.reference_number && errors.reference_number
+                                  ? "custom-form-control is-invalid"
+                                  : "custom-form-control"
+                              }
+                              value={formData.reference_number}
+                              onChange={handleInputChange}
+                            />
+                          </IonItem>
+                          {touched.reference_number && errors.reference_number && (
+                            <IonText color="danger">
+                              <ErrorMessage name="reference_number" />
+                            </IonText>
+                          )}
+                        </>
                       )}
-
                       <IonLabel className="ion-label">
                         Task Type<IonText>*</IonText>
                       </IonLabel>
@@ -662,7 +811,66 @@ const CreateTask: React.FC = () => {
                           <ErrorMessage name="service_id" />
                         </IonText>
                       )}
+                      {formData.service_id === '9' && (
+                        <>
+                          <IonLabel className="ion-label">
+                            Other Type<IonText>*</IonText>
+                          </IonLabel>
+                          <IonItem lines="none">
+                            <IonSelect
+                              className="custom-form-control"
+                              placeholder="Select Other Type"
+                              value={formData.treatmentId}
+                              onIonChange={(e) => {
+                                const selectedValue = e.detail.value;
+                                setFieldValue("treatmentId", selectedValue);
+                                handleInputChange({
+                                  target: {
+                                    name: "treatmentId",
+                                    value: selectedValue,
+                                  },
+                                });
+                              }}
+                            >
+                              {treatmentData &&
+                                treatmentData.length > 0 &&
+                                treatmentData.map((data: any, index: any) => (
+                                  <IonSelectOption key={data.id} value={data.id}>
+                                    {data.treatment_name}
+                                  </IonSelectOption>
+                                ))}
+                            </IonSelect>
+                          </IonItem>
+                          {touched.treatmentId && errors.treatmentId && (
+                            <IonText color="danger">
+                              <ErrorMessage name="treatmentId" />
+                            </IonText>
+                          )}
 
+                          <IonLabel className="ion-label">
+                            Comments<IonText>*</IonText>
+                          </IonLabel>
+                          <IonItem lines="none">
+                            <Field
+                              name="treatmentReason"
+                              placeholder="Please Enter Comments"
+                              type="text"
+                              className={
+                                touched.treatmentReason && errors.treatmentReason
+                                  ? "custom-form-control is-invalid"
+                                  : "custom-form-control"
+                              }
+                              value={formData.treatmentReason}
+                              onChange={handleInputChange}
+                            />
+                          </IonItem>
+                          {touched.treatmentReason && errors.treatmentReason && (
+                            <IonText color="danger">
+                              <ErrorMessage name="treatmentReason" />
+                            </IonText>
+                          )}
+                        </>
+                      )}
                       <IonLabel className="ion-label">
                         Task Date<IonText>*</IonText>
                       </IonLabel>
@@ -700,148 +908,165 @@ const CreateTask: React.FC = () => {
                         </IonText>
                       )}
 
-                      {/* <IonLabel className="ion-label">Task Date<IonText>*</IonText></IonLabel>
-                      <IonItem lines="none">
-                        <Field name="service_date" placeholder='Please select the date' type='date'  className={
-                          touched.service_date && errors.service_date ? "custom-form-control is-invalid" : "custom-form-control"
-                        } value={formData.service_date} onChange={handleInputChange} min={today} />
-                      </IonItem>
-                      {touched.service_date && errors.service_date && (
-                        <IonText color="danger">
-                          <ErrorMessage name="service_date" />
-                        </IonText>)} */}
+                      {formData.service_id !== '9' && (
+                        <>
+                          <IonLabel className="ion-label">
+                            Preferred Time<IonText>*</IonText>
+                          </IonLabel>
 
-                      <IonLabel className="ion-label">
-                        Preferred Time<IonText>*</IonText>
-                      </IonLabel>
+                          <IonItem lines="none" className="timer">
+                            <span className="timer-icon">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                width="24px"
+                                height="24px"
+                              >
+                                <path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zm0 20c-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9-4.029 9-9 9zm1-15h-2v6.414l4.293 4.293 1.414-1.414L13 11.586V6z" />
+                              </svg>
+                            </span>
 
-                      <IonItem lines="none" className="timer">
-                        <span className="timer-icon">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            width="24px"
-                            height="24px"
-                          >
-                            <path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zm0 20c-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9-4.029 9-9 9zm1-15h-2v6.414l4.293 4.293 1.414-1.414L13 11.586V6z" />
-                          </svg>
-                        </span>
+                            <Field
+                              name="preferred_time"
+                              placeholder="Please select the time"
+                              type="time"
+                              className={
+                                touched.preferred_time && errors.preferred_time
+                                  ? "custom-form-control is-invalid"
+                                  : "custom-form-control"
+                              }
+                              value={formData.preferred_time}
+                              onChange={handleInputChange}
+                            />
+                          </IonItem>
 
-                        <Field
-                          name="preferred_time"
-                          placeholder="Please select the time"
-                          type="time"
-                          className={
-                            touched.preferred_time && errors.preferred_time
-                              ? "custom-form-control is-invalid"
-                              : "custom-form-control"
-                          }
-                          value={formData.preferred_time}
-                          onChange={handleInputChange}
-                        />
-                      </IonItem>
-
-                      {touched.preferred_time && errors.preferred_time && (
-                        <IonText color="danger">
-                          <ErrorMessage name="preferred_time" />
-                        </IonText>
+                          {touched.preferred_time && errors.preferred_time && (
+                            <IonText color="danger">
+                              <ErrorMessage name="preferred_time" />
+                            </IonText>
+                          )}
+                        </>
                       )}
-                      {/* <IonLabel className="ion-label">Preferred Time<IonText>*</IonText></IonLabel>
-                      <IonItem lines="none">
-                        <Field name="preferred_time" placeholder='Please select the time' type='time' className={
-                          touched.preferred_time && errors.preferred_time ? "custom-form-control is-invalid" : "custom-form-control"
-                        } value={formData.preferred_time} onChange={handleInputChange} />
-                      </IonItem>
-                      {touched.preferred_time && errors.preferred_time && (
-                        <IonText color="danger">
-                          <ErrorMessage name="preferred_time" />
-                        </IonText>)} */}
+                      {formData.service_id === '9' && (
+                        <>
+                          <IonLabel className="ion-label">
+                            Time Duration<IonText>*</IonText>
+                          </IonLabel>
 
-                      <IonLabel className="ion-label">
-                        Service Duration<IonText>*</IonText>
-                      </IonLabel>
-                      <IonItem lines="none">
-                        <IonSelect
-                          className="custom-form-control"
-                          placeholder="Select Service Duration"
-                          value={formData.service_duration}
-                          onIonChange={(e) => {
-                            const selectedValue = e.detail.value;
-                            setFieldValue("service_duration", selectedValue);
-                            handleInputChange({
-                              target: {
-                                name: "service_duration",
-                                value: selectedValue,
-                              },
-                            });
-                          }}
-                        >
-                          {durationData.map((data: any) => (
-                            <IonSelectOption key={data.id} value={data.id}>
-                              {data.duration} hrs
-                            </IonSelectOption>
-                          ))}
-                        </IonSelect>
-                        {/* <Field 
-                          name="service_duration" 
-                          placeholder='Please select the duration' 
-                          type='time' 
-                          className={touched.service_duration && errors.service_duration ? "custom-form-control is-invalid" : "custom-form-control"}
-                          value={formData.service_duration} 
-                          onChange={handleInputChange}
-                          step = '60' /> */}
-                        {/* <TimePicker label="Meeting time" value="12:30" step={60 * 30} /> */}
-                        {/* <CustomTimeInput              name="service_duration"
-              touched={touched.service_duration}
-              error={errors.service_duration}
-              handleChange={handleInputChange}
-              value={formData.service_duration} /> */}
-                        {/* <IonDatetime
-                      displayFormat="HH:mm"
-                      pickerFormat="HH:mm"
-                      placeholder="Select time"
-                      value={formData.service_duration}
-                      onIonChange={handleInputChange}
-                      presentation="time"
-                    /> */}
-                      </IonItem>
-                      {touched.service_duration && errors.service_duration && (
-                        <IonText color="danger">
-                          <ErrorMessage name="service_duration" />
-                        </IonText>
+                          <IonItem lines="none">
+                            <div style={{ display: 'flex', width: '100%' }}>
+                              <div style={{ flex: 1, paddingRight: '0.5rem' }}>
+                                <IonSelect
+                                  value={hours}
+                                  placeholder="Hours"
+                                  onIonChange={(e) => {
+                                    const newHours = Number(e.detail.value);
+                                    setHours(newHours);
+                                    updateTotalMinutes(newHours, minutes);
+                                  }}
+                                >
+                                  {Array.from({ length: 24 }, (_, i) => (
+                                    <IonSelectOption key={i} value={i}>
+                                      {i.toString().padStart(2, '0')} Hrs
+                                    </IonSelectOption>
+                                  ))}
+                                </IonSelect>
+                              </div>
+
+                              <div style={{ flex: 1, paddingLeft: '0.5rem' }}>
+                                <IonSelect
+                                  value={minutes}
+                                  placeholder="Minutes"
+                                  onIonChange={(e) => {
+                                    const newMinutes = Number(e.detail.value);
+                                    setMinutes(newMinutes);
+                                    updateTotalMinutes(hours, newMinutes);
+                                  }}
+                                >
+                                  {Array.from({ length: 60 }, (_, i) => (
+                                    <IonSelectOption key={i} value={i}>
+                                      {i.toString().padStart(2, '0')} Min
+                                    </IonSelectOption>
+                                  ))}
+                                </IonSelect>
+                              </div>
+                            </div>
+                          </IonItem>
+
+                          {touched.time_duration && errors.time_duration && (
+                            <IonText color="danger">
+                              <ErrorMessage name="time_duration" />
+                            </IonText>
+                          )}
+                        </>
                       )}
+                      {formData.service_id !== '9' && (
+                        <>
+                          <IonLabel className="ion-label">
+                            Service Duration<IonText>*</IonText>
+                          </IonLabel>
+                          <IonItem lines="none">
+                            <IonSelect
+                              className="custom-form-control"
+                              placeholder="Select Service Duration"
+                              value={formData.service_duration}
+                              onIonChange={(e) => {
+                                const selectedValue = e.detail.value;
+                                setFieldValue("service_duration", selectedValue);
+                                handleInputChange({
+                                  target: {
+                                    name: "service_duration",
+                                    value: selectedValue,
+                                  },
+                                });
+                              }}
+                            >
+                              {durationData.map((data: any) => (
+                                <IonSelectOption key={data.id} value={data.id}>
+                                  {data.duration} hrs
+                                </IonSelectOption>
+                              ))}
+                            </IonSelect>
+                          </IonItem>
+                          {touched.service_duration && errors.service_duration && (
+                            <IonText color="danger">
+                              <ErrorMessage name="service_duration" />
+                            </IonText>
+                          )}
 
-                      <IonLabel className="ion-label">
-                        Priority<IonText>*</IonText>
-                      </IonLabel>
-                      <IonItem lines="none">
-                        <IonSelect
-                          className="custom-form-control"
-                          placeholder="Select Priority"
-                          value={formData.priority}
-                          onIonChange={(e) => {
-                            const selectedValue = e.detail.value;
-                            setFieldValue("priority", selectedValue);
-                            handleInputChange({
-                              target: {
-                                name: "priority",
-                                value: selectedValue,
-                              },
-                            });
-                          }}
-                        >
-                          <IonSelectOption value="High">High</IonSelectOption>
-                          <IonSelectOption value="Medium">
-                            Medium
-                          </IonSelectOption>
-                          <IonSelectOption value="Low">Low</IonSelectOption>
-                        </IonSelect>
-                      </IonItem>
-                      {touched.priority && errors.priority && (
-                        <IonText color="danger">
-                          <ErrorMessage name="priority" />
-                        </IonText>
+                          <IonLabel className="ion-label">
+                            Priority<IonText>*</IonText>
+                          </IonLabel>
+                          <IonItem lines="none">
+                            <IonSelect
+                              className="custom-form-control"
+                              placeholder="Select Priority"
+                              value={formData.priority}
+                              onIonChange={(e) => {
+                                const selectedValue = e.detail.value;
+                                setFieldValue("priority", selectedValue);
+                                handleInputChange({
+                                  target: {
+                                    name: "priority",
+                                    value: selectedValue,
+                                  },
+                                });
+                              }}
+                            >
+                              <IonSelectOption value="High">High</IonSelectOption>
+                              <IonSelectOption value="Medium">
+                                Medium
+                              </IonSelectOption>
+                              <IonSelectOption value="Low">Low</IonSelectOption>
+                            </IonSelect>
+                          </IonItem>
+                          {touched.priority && errors.priority && (
+                            <IonText color="danger">
+                              <ErrorMessage name="priority" />
+                            </IonText>
+                          )}
+                        </>
                       )}
                     </div>
                   </IonList>
@@ -862,7 +1087,7 @@ const CreateTask: React.FC = () => {
                         type="submit"
                         id="pestDetails"
                       >
-                        NEXT
+                        {formData.service_id === '9' ? "CREATE" : "NEXT"}
                       </IonButton>
                     </IonToolbar>
                   </IonFooter>

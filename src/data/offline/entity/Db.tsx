@@ -74,7 +74,7 @@ const Db: React.FC = () => {
 
       console.log("task list Request body:", requestBody);
 
-      const response = await fetch(`${API_BASE_URL}/task-list`, {
+      const response = await fetch(`${API_BASE_URL}/v2/task-list`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -128,7 +128,7 @@ const Db: React.FC = () => {
   //     console.log("ChemicalData Request body:", requestBody);
 
   //     // Send request to API
-  //     const response = await fetch(`${API_BASE_URL}/get-items`, {
+  //     const response = await fetch(`${API_BASE_URL}/v1/get-items`, {
   //       method: "POST",
   //       headers: {
   //         "Content-Type": "application/json",
@@ -181,7 +181,7 @@ const fetchChemicalData = async (service_id: string, userData: any) => {
     };
 
     const response = await fetch(
-      `${API_BASE_URL}/get-chemicals-used-for-pest
+      `${API_BASE_URL}/v2/get-chemicals-used-for-pest
 `,
       {
         method: "POST",
@@ -327,7 +327,7 @@ throw error; // Propagate error to the outer catch block
 
       console.log("Request body:", payload);
 
-      const response = await fetch(`${API_BASE_URL}/get-ideal-technicians`, {
+      const response = await fetch(`${API_BASE_URL}/v1/get-ideal-technicians`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,7 +389,7 @@ throw error; // Propagate error to the outer catch block
   //     console.log("Pest Types Request body:", requestBody);
 
   //     // Send request to API
-  //     const response = await fetch(`${API_BASE_URL}/get-pests-list`, {
+  //     const response = await fetch(`${API_BASE_URL}/v1/get-pests-list`, {
   //       method: "POST",
   //       headers: {
   //         "Content-Type": "application/json",
@@ -430,7 +430,7 @@ throw error; // Propagate error to the outer catch block
         visit_id: visitId, // Use the visit_id in the request body
       };
   
-      const response = await fetch(`${API_BASE_URL}/get-pests-reported-by-visit`, {
+      const response = await fetch(`${API_BASE_URL}/v2/get-pests-reported-by-visit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -550,7 +550,7 @@ throw error; // Propagate error to the outer catch block
       const userData = JSON.parse(userDataString);
 
       const response = await fetch(
-        `${API_BASE_URL}/get-recommendations-list
+        `${API_BASE_URL}/v1/get-recommendations-list
   `,
         {
           method: "GET",
@@ -610,7 +610,7 @@ throw error; // Propagate error to the outer catch block
 
       // Send request to API
       const response = await fetch(
-        `${API_BASE_URL}/get-work-done-questionnaire`,
+        `${API_BASE_URL}/v1/get-work-done-questionnaire`,
         {
           method: "POST",
           headers: {
@@ -764,7 +764,7 @@ throw error; // Propagate error to the outer catch block
 
       console.log("complete task Request body:", requestBody);
 
-      const response = await fetch(`${API_BASE_URL}/task-list`, {
+      const response = await fetch(`${API_BASE_URL}/v2/task-list`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -813,7 +813,7 @@ throw error; // Propagate error to the outer catch block
       console.log("get-visit-execution-details Request body:", requestBody);
 
       const response = await fetch(
-        `${API_BASE_URL}/get-visit-execution-details-v2`,
+        `${API_BASE_URL}/v1/get-visit-execution-details-v2`,
         {
           method: "POST",
           headers: {
@@ -944,7 +944,7 @@ throw error; // Propagate error to the outer catch block
       console.log("Task Details Request body:", payload);
 
       // Send request to API
-      const response = await fetch(`${API_BASE_URL}/task-detail`, {
+      const response = await fetch(`${API_BASE_URL}/v2/task-detail`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

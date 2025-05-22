@@ -73,7 +73,7 @@ interface Technician {
 
 //       console.log("Request body:", requestBody);
 
-//       const response = await fetch(`${API_BASE_URL}/task-list`, {
+//       const response = await fetch(`${API_BASE_URL}/v1/task-list`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -133,7 +133,7 @@ interface Technician {
 //             },
 //         };
 
-//         const response = await fetch(`${API_BASE_URL}/task-detail`, {
+//         const response = await fetch(`${API_BASE_URL}/v2/task-detail`, {
 //             method: "POST",
 //             headers: {
 //                 "Content-Type": "application/json",
@@ -195,7 +195,7 @@ interface Technician {
 //         },
 //       };
 
-//       const response = await fetch(`${API_BASE_URL}/get-recommendation-list`, {
+//       const response = await fetch(`${API_BASE_URL}/v1/get-recommendation-list`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -226,7 +226,7 @@ interface Technician {
 //         service_id: "4",
 //       };
 
-//       const response = await fetch(`${API_BASE_URL}/get-items`, {
+//       const response = await fetch(`${API_BASE_URL}/v1/get-items`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -279,7 +279,7 @@ interface Technician {
 //       },
 //     };
 //     try {
-//       const response = await fetch(`${API_BASE_URL}/get-ideal-technicians`, {
+//       const response = await fetch(`${API_BASE_URL}/v1/get-ideal-technicians`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",

@@ -90,7 +90,7 @@ const StockTransfer: React.FC = () => {
         toast.error("Minimum quantity is 1");
         setInputValues({
           ...inputValues,
-          [item.id]: parseFloat('1').toFixed(2),
+          [item.id]: parseFloat(item.availableQuantity).toFixed(2),
         })
         return;
       }
@@ -121,15 +121,24 @@ const StockTransfer: React.FC = () => {
       }
 
     } else {
-      if (1 > item.availableQuantity) {
-
+      
+      if (0 > item.availableQuantity) {
         toast.error(`Maximum quantity is ${item.availableQuantity}`);
       } else {
-        setTransferItems([...transferItems, { ...item, quantity: parseFloat('1').toFixed(2) }]);
+        if(item.availableQuantity > 0 && item.availableQuantity < 1){
+          setTransferItems([...transferItems, { ...item, quantity: parseFloat(item.availableQuantity).toFixed(2) }]);
+          setInputValues({
+            ...inputValues,
+            [item.id]: parseFloat(item.availableQuantity).toFixed(2),
+          });
+        }else{
+          setTransferItems([...transferItems, { ...item, quantity: parseFloat('1').toFixed(2) }]);
         setInputValues({
           ...inputValues,
           [item.id]: parseFloat('1').toFixed(2),
         });
+        }
+        
         //toast.success(`${item.item_name} added sucessfully`);
       }
     }
@@ -241,7 +250,7 @@ const StockTransfer: React.FC = () => {
         },
         pagination: {
           limit: "10",
-          page: isInitial ? "0" : page.toString()
+          page: page
         }
       };
       const response = await fetchMaterilData(payload);
@@ -253,7 +262,7 @@ const StockTransfer: React.FC = () => {
         } else {
           setMaterialDetails((prevDetails: any) => [...prevDetails, ...details]);
         }
-        setHasMoreMaterials(details.length === 10);
+        setHasMoreMaterials(details.length == 10);
         setPage(prevPage => prevPage + 1);
       } else {
         console.error("Failed to fetch material details. Error:", response?.data.message);
@@ -516,7 +525,7 @@ const StockTransfer: React.FC = () => {
 
                   className="ion-list-item  ion-no-padding stockList"
                 >
-                  <IonItem key={index} lines="none">
+                  <IonItem key={index} lines="none" className={data.availableQuantity > 1 ? "stockInputAddAvailable" : "stockInputAddDisabled"}>
                     <IonText className="listCont">
                       <h3>{data.item_name}</h3>
                       <div className="stockInputAdd">
