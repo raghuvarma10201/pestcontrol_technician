@@ -108,7 +108,19 @@ export const formatDate = (dateString: any) => {
         // hourCycle:"h24"
     });
 };
-
+export const formatDateTime2 = (dateString: any) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: 'numeric',
+        minute: 'numeric',
+        //second: 'numeric',
+        hour12: true,
+        // hourCycle:"h24"
+    });
+};
 
 
 

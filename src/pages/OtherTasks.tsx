@@ -28,7 +28,7 @@ import {
 import CommonHeader from "../components/CommonHeader";
 import TaskComponent from "../components/TaskComponent";
 import {
-  checkOngoingTask,
+    fetchOtherTaskData,
   fetchTaskData,
   fetchTaskDetails,
   formatDate,
@@ -46,9 +46,10 @@ import { retrieveNetworkTasksDetails } from "../data/offline/entity/DataRetrieve
 import GoTop from "../components/GoTop";
 import { Storage } from "@capacitor/storage";
 import { getCurrentLocation } from "../data/providers/GeoLocationProvider";
+import OtherTaskComponent from "../components/OtherTaskComponent";
 
 
-const Tasks: React.FC = () => {
+const OtherTasks: React.FC = () => {
   const [taskData, setTaskData] = useState<any[]>([]);
   const [selectedSegment, setSelectedSegment] =
     useState<string>("pendingSegment");
@@ -64,14 +65,12 @@ const Tasks: React.FC = () => {
   const searchInputRef = useRef<HTMLIonSearchbarElement>(null);
   const [filterCriteria, setFilterCriteria] = useState({
     service_date: "",
-    priority: "",
-    service_status: "ROUTINE_ON_GOING | ROUTINE_PENDING",
+    service_status: "",
   });
   console.log("default date string = ", getJustDate());
   const [filterselectedCriterias, setselectedFilterCriteria] = useState({
     service_date: "",
-    priority: "",
-    service_status: "ROUTINE_ON_GOING | ROUTINE_PENDING",
+    service_status: "",
   });
   const [pausedCount, setPausedCount] = useState(0);
   const [pendingOngoingCount, setPendingOngoingCount] = useState(0);
@@ -85,7 +84,7 @@ const Tasks: React.FC = () => {
 
   useEffect(() => {
     if (effectRan.current === false) {
-      getOnGoingNPendingTasks('', filterCriteria, 0);
+      getOtherTasks('',filterCriteria, 0);
       effectRan.current = true;
     }
   }, []);
@@ -94,23 +93,9 @@ const Tasks: React.FC = () => {
     //getOnGoingNPendingTasks('', selectedStatus);
   }, [selectedSegment]);
 
-  const getOnGoingNPendingTasks = async (searchText: any, status: any, page: any) => {
+  const getOtherTasks = async (searchText: any, filter : any,  page: any) => {
 
     let geolocation: any = await getCurrentLocation();
-    console.log('filterCriteria',status);
-    const mapToObject = (map: Map<string, any>) =>
-      Object.fromEntries(map.entries());
-    const filterMap = new Map<string, any>();
-    // Apply individual filter conditions
-    if (status.priority !== "") {
-      filterMap.set("tbl_visits.priority", status.priority);
-    }
-    if (status.service_date !== "") {
-      filterMap.set("tbl_visits.service_date", status.service_date);
-    }
-    // Always include service_status filter
-    filterMap.set("tbl_visits.service_status", status.service_status);
-    const convFilterCriteria = mapToObject(filterMap);
 
     setLoading(true);
     if (geolocation.coords.latitude && geolocation.coords.longitude) {
@@ -118,8 +103,8 @@ const Tasks: React.FC = () => {
       setLoading(true);
       console.log("Fetching Task List from Tasks");
       // Fetch tasks with statuses 14 (pending), 17 (on-going), 33 (new status)
-      let response = await retrieveNetworkTasks(
-        convFilterCriteria,
+      let response = await fetchOtherTaskData(
+        filter,
         geolocation.coords.latitude,
         geolocation.coords.longitude,
         searchText,
@@ -135,48 +120,11 @@ const Tasks: React.FC = () => {
         setHasMoreTasks(true)
         setPage(prevPage => prevPage + 1);
       }
-
-      // Sort the data: Pending tasks should come first, and within each status, sort by created date descending
-      let sortedData = rawTaskList.sort((a: any, b: any) => {
-        // Sort by service_status first (pending first, ongoing and others later)
-        // if (a.service_status === "Pending" && b.service_status !== "Pending") {
-        //   return -1;
-        // }
-        // if (a.service_status !== "Pending" && b.service_status === "Pending") {
-        //   return 1;
-        // }
-
-        // If statuses are the same, sort by created date descending
-        return (
-          new Date(b.created_on).getTime() - new Date(a.created_on).getTime()
-        );
-      });
-      sortedData = rawTaskList.sort((a: any, b: any) => {
-        // Sort by service_status first (pending first, ongoing and others later)
-        if (
-          a.service_status === "On Going" &&
-          b.service_status !== "On Going"
-        ) {
-          return -1;
-        }
-        if (
-          a.service_status !== "On Going" &&
-          b.service_status === "On Going"
-        ) {
-          return 1;
-        }
-
-        // If statuses are the same, sort by created date descending
-        return (
-          new Date(b.created_on).getTime() - new Date(a.created_on).getTime()
-        );
-      });
-
-      consolidatedData = sortedData;
+      consolidatedData = rawTaskList;
       setLoading(false);
       setTaskData((prevDetails: any) => [...prevDetails, ...consolidatedData]);
       setFilteredTaskData((prevDetails: any) => [...prevDetails, ...consolidatedData]);
-      getTaskCounts(response.status_count);
+      //getTaskCounts(response.status_count);
       //setTaskData(consolidatedData);
       console.log(taskData);
     } else {
@@ -206,7 +154,7 @@ const Tasks: React.FC = () => {
     setTaskData([]);
     setPage(0);
     setFilteredTaskData([]);
-    getOnGoingNPendingTasks('', filterCriteria, 0);
+    getOtherTasks('',filterCriteria, 0);
   }
 
   useEffect(() => {
@@ -253,7 +201,7 @@ const Tasks: React.FC = () => {
       setPage(0)
       setTaskData([]);
       setFilteredTaskData([]);
-      await getOnGoingNPendingTasks('', filterCriteria, 0);
+      await getOtherTasks('',filterCriteria, 0);
     }
   };
 
@@ -262,9 +210,6 @@ const Tasks: React.FC = () => {
     index: number,
     status: string
   ) => {
-    console.log(status);
-     const isOngoing: any = await checkOngoingTask();
-    console.log("isOngoing", isOngoing);
     if (status === "complete") {
       toast.success("Service Request is already complete.", {
         autoClose: 3000,
@@ -277,15 +222,8 @@ const Tasks: React.FC = () => {
       (task: any) =>
         task.service_status.toLowerCase() === "on going" && task.id !== taskId
     );
-   
+
     if (ongoingTask) {
-      toast.info(
-        "Please complete or pause the ongoing task before starting or resuming another one.",
-        { autoClose: 3000 }
-      );
-      history.push("/tasks");
-      return;
-    }else if((status === "Pending" || status === "Paused") && isOngoing.is_user_on_job == true){
       toast.info(
         "Please complete or pause the ongoing task before starting or resuming another one.",
         { autoClose: 3000 }
@@ -314,11 +252,11 @@ const Tasks: React.FC = () => {
       if (query.length >= 3) {
         setTaskData([]);
         setFilteredTaskData([]);
-        await getOnGoingNPendingTasks(query, selectedStatus, 0);
+        await getOtherTasks(query,filterCriteria, 0);
       } else {
         setTaskData([]);
         setFilteredTaskData([]);
-        await getOnGoingNPendingTasks('', selectedStatus, 0);
+        await getOtherTasks('',filterCriteria, 0);
       }
       let filteredData = taskData.slice();
       console.log("Search Query:", query);
@@ -326,7 +264,7 @@ const Tasks: React.FC = () => {
       setPage(0)
       setTaskData([]);
       setFilteredTaskData([]);
-      await getOnGoingNPendingTasks('', selectedStatus, 0);
+      await getOtherTasks('',filterCriteria, 0);
     }
   };
 
@@ -352,13 +290,13 @@ const Tasks: React.FC = () => {
   ////////////////////////////////filter function///////////////////////////////
 
   const handleFilterSubmit = () => {
-    if (filterCriteria.priority !== "" || filterCriteria.service_date !== "") {
+    if (filterCriteria.service_status !== "" || filterCriteria.service_date !== "") {
       setIsOpen(false);
       applyFilter();
       setFilterError(false);
     } else {
       if (
-        filterCriteria.priority === "" ||
+        filterCriteria.service_status === "" ||
         filterCriteria.service_date === ""
       ) {
         setFilterError(true);
@@ -373,24 +311,21 @@ const Tasks: React.FC = () => {
     setFilterApplied(false);
     setselectedFilterCriteria({
       service_date: "",
-      priority: "",
-      service_status: selectedStatus,
+      service_status: '',
     });
     setFilterCriteria({
       service_date: "",
-      priority: "",
-      service_status: selectedStatus,
+      service_status: '',
     });
     setPage(0)
     setTaskData([]);
     setFilteredTaskData([]);
     setTimeout(async () => {
-      await getOnGoingNPendingTasks('', {
-        service_date: "",
-        priority: "",
-        service_status: selectedStatus,
-      }, 0);
-    }, 1000);
+      await getOtherTasks('', {
+      service_date: "",
+      service_status: '',
+    },0);
+    }, 500);
 
   };
 
@@ -404,14 +339,14 @@ const Tasks: React.FC = () => {
 
   const loadMoreTasks = async (event: CustomEvent<void>) => {
 
-    await getOnGoingNPendingTasks(searchQuery, filterCriteria, page);
+    await getOtherTasks(searchQuery,filterCriteria, page);
     (event.target as HTMLIonInfiniteScrollElement).complete();
   };
   return (
     <IonPage>
       <CommonHeader
         backToPath={"/dashboard"}
-        pageTitle={"Tasks"}
+        pageTitle={"Other Tasks"}
         showIcons={true}
       />
       <IonContent
@@ -419,58 +354,7 @@ const Tasks: React.FC = () => {
         className="dashboardWrapp ionContentColor ion-padding-horizontal"
       >
         {loading && <IonProgressBar type="indeterminate" />}
-        <IonSegment
-          className="stockIonSegmentButton"
-          value={selectedSegment}
-          onIonChange={(e) => {
-            const value = e.detail.value as string;
-            setSelectedSegment(value);
-            setPage(0);
-            if (value === 'pendingSegment') {
-              setSelectedStatus("ROUTINE_ON_GOING | ROUTINE_PENDING");
-              segmentChange("ROUTINE_ON_GOING | ROUTINE_PENDING");
-
-            }
-            if (value === 'pausedSegment') {
-              setSelectedStatus("ROUTINE_PAUSED");
-              segmentChange("ROUTINE_PAUSED");
-            }
-            if (value === 'expiredSegment') {
-              setSelectedStatus("ROUTINE_EXPIRED");
-              segmentChange("ROUTINE_EXPIRED");
-            }
-          }}
-        >
-          <IonSegmentButton value="pendingSegment">
-            <IonLabel>
-              Pending{" "}
-              <IonBadge slot="start">
-                {" "}
-                {pendingOngoingCount}
-              </IonBadge>
-            </IonLabel>
-          </IonSegmentButton>
-          <IonSegmentButton value="pausedSegment">
-            <IonLabel>
-              Paused{" "}
-              <IonBadge slot="start">
-                {pausedCount}
-              </IonBadge>
-            </IonLabel>
-          </IonSegmentButton>
-
-          <IonSegmentButton value="expiredSegment">
-            <IonLabel>
-              Expired{" "}
-              <IonBadge slot="start">
-                {" "}
-                {expiredCount}
-              </IonBadge>
-            </IonLabel>
-          </IonSegmentButton>
-        </IonSegment>
         <div>
-          {selectedSegment === "pendingSegment" && (
             <div>
               <IonItem
                 lines="none"
@@ -481,7 +365,6 @@ const Tasks: React.FC = () => {
                   debounce={500}
                   onIonInput={handleInput}
                 ></IonSearchbar>
-
                 <div className="ion-float_end">
                   <IonButton
                     shape="round"
@@ -521,20 +404,16 @@ const Tasks: React.FC = () => {
                       lines="full"
                     >
                       <div className="task-container">
-                        <TaskComponent
+                        <OtherTaskComponent
                           id={task.id}
-                          path={`/tasks/${task.id}`}
-                          title={task.service_name}
-                          subTitle={task.address}
-                          serviceDate={task.service_date}
+                          path={`/othertasks/${task.id}`}
+                          title={task.task_name}
+                          subTitle={task.treatment_name}
+                          serviceDate={task.task_date}
                           date={`${formatDate(task.created_on)}  ${formatTime(
                             task.created_on
                           )}`}
-                          time={task.preffered_time}
-                          reference_Number={task.reference_number}
-                          priority={task.priority}
-                          distance={task.distance}
-                          status={task.service_status}
+                           status={task.status_name}
                           imgSrc="/assets/images/location-icon.svg"
                         />
                       </div>
@@ -542,129 +421,6 @@ const Tasks: React.FC = () => {
                   ))}
               </IonList>
             </div>
-          )}
-          {selectedSegment === "pausedSegment" && (
-            <div>
-              <IonItem
-                lines="none"
-                className="ion-item-inner ion-no-padding ion-margin-vertical"
-              >
-                <IonSearchbar
-                  ref={searchInputRef}
-                  debounce={500}
-                  onIonInput={handleInput}
-                ></IonSearchbar>
-
-                <div className="ion-float_end">
-                  <IonButton
-                    shape="round"
-                    onClick={() => setIsOpen(true)}
-                    className="roundedWhiteBtIcon ion-no-margin"
-                  >
-                    <IonImg src="assets/images/filter-icon.svg"></IonImg>
-                  </IonButton>
-                </div>
-              </IonItem>
-
-              <IonList lines="none" className="ion-list-item">
-                {!loading && filteredTaskData.length === 0 && (
-                  <p style={{ textAlign: "center", width: "100%" }}>
-                    No tasks assigned/found.
-                  </p>
-                )}
-                {filteredTaskData.length > 0 &&
-                  filteredTaskData.map((task: any, index: any) => (
-                    <IonItem
-                      key={task.id}
-                      onClick={() =>
-                        handleTaskClick(task.id, index, task.service_status)
-                      }
-                      lines="full"
-                    >
-                      <div className="task-container">
-                        <TaskComponent
-                          id={task.id}
-                          path={`/tasks/${task.id}`}
-                          title={task.service_name}
-                          subTitle={task.address}
-                          serviceDate={task.service_date}
-                          date={`${formatDate(task.created_on)}  ${formatTime(
-                            task.created_on
-                          )}`}
-                          time={task.preffered_time}
-                          reference_Number={task.reference_number}
-                          priority={task.priority}
-                          distance={task.distance}
-                          status={task.service_status}
-                          imgSrc="/assets/images/location-icon.svg"
-                        />
-                      </div>
-                    </IonItem>
-                  ))}
-              </IonList>
-            </div>
-          )}
-          {selectedSegment === "expiredSegment" && (
-            <div>
-              <IonItem
-                lines="none"
-                className="ion-item-inner ion-no-padding ion-margin-vertical"
-              >
-                <IonSearchbar
-                  ref={searchInputRef}
-                  debounce={500}
-                  onIonInput={handleInput}
-                ></IonSearchbar>
-
-                <div className="ion-float_end">
-                  <IonButton
-                    shape="round"
-                    onClick={() => setIsOpen(true)}
-                    className="roundedWhiteBtIcon ion-no-margin"
-                  >
-                    <IonImg src="assets/images/filter-icon.svg"></IonImg>
-                  </IonButton>
-                </div>
-              </IonItem>
-
-              <IonList lines="none" className="ion-list-item">
-                {!loading && filteredTaskData.length === 0 && (
-                  <p style={{ textAlign: "center", width: "100%" }}>
-                    No tasks assigned/found.
-                  </p>
-                )}
-                {filteredTaskData.length > 0 &&
-                  filteredTaskData.map((task: any, index: any) => (
-                    <IonItem
-                      key={task.id}
-                      // onClick={() =>
-                      //   handleTaskClick(task.id, index, task.service_status)
-                      // }
-                      lines="full"
-                    >
-                      <div className="task-container">
-                        <TaskComponent
-                          id={task.id}
-                          //path={`/tasks/${task.id}`}
-                          title={task.service_name}
-                          subTitle={task.address}
-                          serviceDate={task.service_date}
-                          date={`${formatDate(task.created_on)}  ${formatTime(
-                            task.created_on
-                          )}`}
-                          time={task.preffered_time}
-                          reference_Number={task.reference_number}
-                          priority={task.priority}
-                          distance={task.distance}
-                          status={task.service_status}
-                          imgSrc="/assets/images/location-icon.svg"
-                        />
-                      </div>
-                    </IonItem>
-                  ))}
-              </IonList>
-            </div>
-          )}
         </div>
         <IonInfiniteScroll
           threshold="100px"
@@ -673,7 +429,7 @@ const Tasks: React.FC = () => {
         >
           <IonInfiniteScrollContent
             loadingSpinner="bubbles"
-            loadingText="Loading more tasks..."
+            loadingText="Loading more Tasks..."
           ></IonInfiniteScrollContent>
         </IonInfiniteScroll>
       </IonContent>
@@ -689,7 +445,7 @@ const Tasks: React.FC = () => {
               <IonList className="formlist">
                 <IonItem lines="none">
                   <div className="width100">
-                    <IonLabel className="ion-label">Service Date</IonLabel>
+                    <IonLabel className="ion-label">Task Date</IonLabel>
                     <IonInput
                       name="service_date"
                       type="date"
@@ -704,25 +460,27 @@ const Tasks: React.FC = () => {
 
                 <IonItem lines="none">
                   <div className="width100">
-                    <IonLabel className="ion-label">Priority</IonLabel>
+                    <IonLabel className="ion-label">Status</IonLabel>
                     <IonSelect
-                      value={filterselectedCriterias.priority}
-                      name="priority"
+                      value={filterselectedCriterias.service_status}
+                      name="service_status"
                       onIonChange={handleFilterChange}
                       labelPlacement="floating"
                       placeholder="Select"
                       fill="outline"
                       aria-label=""
                     >
-                      <IonSelectOption value="High">High</IonSelectOption>
-                      <IonSelectOption value="Medium">Medium</IonSelectOption>
-                      <IonSelectOption value="Low">Low</IonSelectOption>
+                      <IonSelectOption value="">Select Status</IonSelectOption>
+                      <IonSelectOption value="OTHER_TASK_SCHEDULED">Scheduled</IonSelectOption>
+                      <IonSelectOption value="OTHER_TASK_PENDING">Pending</IonSelectOption>
+                      <IonSelectOption value="OTHER_TASK_ON_GOING">On Going</IonSelectOption>
+                      <IonSelectOption value="OTHER_TASK_COMPLETED">Completed</IonSelectOption>
                     </IonSelect>
                   </div>
                 </IonItem>
                 {filterError ? (
                   <IonText style={{ color: "red" }}>
-                    Please select Date (or) Priority
+                    Please select Date (or) Status
                   </IonText>
                 ) : (
                   ""
@@ -761,4 +519,4 @@ const Tasks: React.FC = () => {
   );
 };
 
-export default Tasks;
+export default OtherTasks;

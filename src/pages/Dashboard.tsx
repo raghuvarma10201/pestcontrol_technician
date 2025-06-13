@@ -138,8 +138,13 @@ const Dashboard: React.FC = () => {
     },
     {
       path: "/createCallOut",
-      icon: "create-task-icon.svg",
+      icon: "create-callout-icon.svg",
       title: "Create Callout",
+    },
+    {
+      path: "/othertasks",
+      icon: "other-tasks-icon.svg",
+      title: "Other Tasks",
     },
     // {
     //   path: "sync",

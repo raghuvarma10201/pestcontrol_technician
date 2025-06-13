@@ -147,11 +147,7 @@ const CreateTask: React.FC = () => {
         : schema.notRequired();
     }),
     service_date: Yup.string().required("Task date is required."),
-    preferred_time: Yup.string().when('service_id', (service_id: any, schema) => {
-      return Array.isArray(service_id) && !service_id.includes('9')
-        ? schema.required('Preferred time is required')
-        : schema.notRequired();
-    }),
+    preferred_time: Yup.string().required("Time is required."),
     service_duration: Yup.string().when('service_id', (service_id: any, schema) => {
       return Array.isArray(service_id) && !service_id.includes('9')
         ? schema.required('Please select the duration.')
@@ -437,6 +433,8 @@ const CreateTask: React.FC = () => {
 
   const onSubmit = async (values: any) => {
     console.log(values);
+    const dateTime = new Date(values.service_date+ ' ' + values.preferred_time).toISOString();
+    console.log("Date-Time String:", dateTime); // Output: 2025-05-27T14:30:00.000Z
     if (values.service_id === '9') {
       console.log('Need API to Proceed');
       const requestBody = {
@@ -444,6 +442,7 @@ const CreateTask: React.FC = () => {
         task_type: values.service_id,
         other_type: values.treatmentId,
         comments: values.treatmentReason,
+        schedule_time : dateTime,
         task_date: values.service_date,//only date
         task_duration: values.time_duration,//In Minutes
         is_productive_hours: 1 //1,0
@@ -453,7 +452,7 @@ const CreateTask: React.FC = () => {
         const response = await createOtherTask(requestBody);
         console.log(response);
         if (response && response.success) {
-         
+          toast.success(response.message);
           setFormData({
             title: "",
             reference_number: "",
@@ -474,7 +473,7 @@ const CreateTask: React.FC = () => {
           setTreatmentType(false);
           setCustomerDataPage(false);
           toast.success(response.message);
-          history.push("/tasks");
+          history.push("/othertasks");
         } else {
           // Handle error messages
           const errorData = response.data[0];
@@ -908,46 +907,43 @@ const CreateTask: React.FC = () => {
                         </IonText>
                       )}
 
-                      {formData.service_id !== '9' && (
-                        <>
-                          <IonLabel className="ion-label">
-                            Preferred Time<IonText>*</IonText>
-                          </IonLabel>
+                      <IonLabel className="ion-label">
+                        Preferred Time<IonText>*</IonText>
+                      </IonLabel>
 
-                          <IonItem lines="none" className="timer">
-                            <span className="timer-icon">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                width="24px"
-                                height="24px"
-                              >
-                                <path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zm0 20c-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9-4.029 9-9 9zm1-15h-2v6.414l4.293 4.293 1.414-1.414L13 11.586V6z" />
-                              </svg>
-                            </span>
+                      <IonItem lines="none" className="timer">
+                        <span className="timer-icon">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            width="24px"
+                            height="24px"
+                          >
+                            <path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zm0 20c-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9-4.029 9-9 9zm1-15h-2v6.414l4.293 4.293 1.414-1.414L13 11.586V6z" />
+                          </svg>
+                        </span>
 
-                            <Field
-                              name="preferred_time"
-                              placeholder="Please select the time"
-                              type="time"
-                              className={
-                                touched.preferred_time && errors.preferred_time
-                                  ? "custom-form-control is-invalid"
-                                  : "custom-form-control"
-                              }
-                              value={formData.preferred_time}
-                              onChange={handleInputChange}
-                            />
-                          </IonItem>
+                        <Field
+                          name="preferred_time"
+                          placeholder="Please select the time"
+                          type="time"
+                          className={
+                            touched.preferred_time && errors.preferred_time
+                              ? "custom-form-control is-invalid"
+                              : "custom-form-control"
+                          }
+                          value={formData.preferred_time}
+                          onChange={handleInputChange}
+                        />
+                      </IonItem>
 
-                          {touched.preferred_time && errors.preferred_time && (
-                            <IonText color="danger">
-                              <ErrorMessage name="preferred_time" />
-                            </IonText>
-                          )}
-                        </>
+                      {touched.preferred_time && errors.preferred_time && (
+                        <IonText color="danger">
+                          <ErrorMessage name="preferred_time" />
+                        </IonText>
                       )}
+
                       {formData.service_id === '9' && (
                         <>
                           <IonLabel className="ion-label">

@@ -62,7 +62,7 @@ const formatDate = (dateString: string): string => {
       }
     return (
     <>
-        <IonItem  routerLink={path}>
+        <IonItem  >
             <IonThumbnail slot="start" class="thumbnailIcon">
                 <IonImg src={imgSrc}></IonImg>
             </IonThumbnail>

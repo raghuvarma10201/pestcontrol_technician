@@ -83,6 +83,8 @@ import AppUpdate from "./components/AppUpdate";
 import { LoadScript, useLoadScript } from "@react-google-maps/api";
 import CreateCallOut from "./pages/CreateCallOut";
 import { Storage } from '@capacitor/storage';
+import OtherTasks from "./pages/OtherTasks";
+import OtherTaskDetails from "./pages/OtherTaskDetails";
 
 setupIonicReact();
 const getUserId = () => {
@@ -246,9 +248,14 @@ const App: React.FC = () => {
             <Route exact path="/tasks">
               <Tasks />
             </Route>
-
+            <Route exact path="/othertasks">
+              <OtherTasks />
+            </Route>
             <Route exact path="/tasks/:taskId">
               <TaskDetails />
+            </Route>
+            <Route exact path="/othertasks/:taskId">
+              <OtherTaskDetails />
             </Route>
             <Route exact path="/formdata/:taskId">
               <FormData />

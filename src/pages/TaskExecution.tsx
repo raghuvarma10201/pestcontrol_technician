@@ -20,6 +20,7 @@ import {
   getTaskInitTimes,
   taskInit,
   getVisitExecutionDetails,
+  checkOngoingTask,
 } from "../data/apidata/taskApi/taskDataApi";
 import {
   formatDate,
@@ -295,7 +296,17 @@ const TaskExecution: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   // Function to toggle tracking time
   const toggleTrackingTime = async () => {
+    const isOngoing: any = await checkOngoingTask();
+    console.log("isPaused", isPaused);
     try {
+      if (isPaused == true ) {
+        if (isOngoing.is_user_on_job == true) {
+        toast.info(
+          "Please complete or pause the ongoing task before starting or resuming another one."
+        );
+        return;
+      }
+      }
       if (
         visitExecutionDetails?.pests_found?.some(
           (pest: Pest) => pest.is_chemical_added === null
@@ -364,7 +375,7 @@ const TaskExecution: React.FC = () => {
     localStorage.removeItem(`activeChemicalUsed-${visitId}`);
     localStorage.removeItem(`activityUsageArray-${visitId}`);
     localStorage.removeItem("activeTaskData");
-    await Storage.remove({key: 'visit_id'});
+    await Storage.remove({ key: 'visit_id' });
   };
 
   useEffect(() => {

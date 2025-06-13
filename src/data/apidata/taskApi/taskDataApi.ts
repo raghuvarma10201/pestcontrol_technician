@@ -35,11 +35,11 @@ export const fetchTaskData = async (
   status: string[],
   latitude: number,
   longitude: number,
-  search : string,
-  page : any
+  search: string,
+  page: any
 ) => {
   // const location = useLongitudeLocation();
-  console.log("statusArraywwwwwwwww",status);
+  console.log("statusArraywwwwwwwww", status);
   const userData = getUserData();
   try {
     const requestBody = {
@@ -71,7 +71,7 @@ export const fetchTaskData = async (
         latitude,
         longitude,
       },
-      search : search
+      search: search
     };
 
     const response = await fetch(`${API_BASE_URL}/v2/task-list`, {
@@ -93,7 +93,59 @@ export const fetchTaskData = async (
     throw error;
   }
 };
+export const fetchOtherTaskData = async (
+  filter : any,
+  latitude: number,
+  longitude: number,
+  search: string,
+  page: any
+) => {
+  const userData = getUserData();
+  try {
+    const requestBody = {
+      columns: [
+        "tbl_other_tasks.id",
+        "tbl_other_tasks.task_name",
+        "tbl_other_tasks.task_date",
+        "tbl_services.service_name",
+        "tbl_other_tasks.task_status",
+        "tbl_status.status_name",
+        "tbl_treatment_types.treatment_name",
+        "tbl_other_tasks.created_on"
+      ],
+      "order_by": {
+        "tbl_other_tasks.task_date": "desc"
+      },
+      "filters": {
+        "tbl_other_tasks.task_status": filter.service_status,
+	      "tbl_other_tasks.task_date": filter.service_date
+      },
+      "pagination": {
+        "limit": "10",
+        "page": page
+      },
+      search: search
+    }
 
+    const response = await fetch(`${API_BASE_URL}/v1/get-other-tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userData?.api_token}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch data");
+    }
+    console.log(response);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching task data:", error);
+    throw error;
+  }
+};
 export const fetchFilteredTaskData = async (
   filterCriteria: string[],
   latitude: number,
@@ -183,7 +235,7 @@ export const completedTaskData = async (
         "tbl_visits.service_completed": "desc",
       },
       filters: {
-        "tbl_visits.service_status": "18",
+        "tbl_visits.service_status": "ROUTINE_COMPLETED",
       },
       pagination: {
         limit: "0",
@@ -373,6 +425,56 @@ export async function fetchTaskDetails(id: string): Promise<any> {
   }
 }
 
+export async function fetchOtherTaskDetails(id: string): Promise<any> {
+  const userData = getUserData();
+
+  try {
+    const payload = {
+      columns: [
+        "tbl_other_tasks.id",
+        "tbl_other_tasks.task_name",
+        "tbl_other_tasks.comments",
+        "tbl_other_tasks.task_status",
+         "tbl_status.status_name",
+        "tbl_other_tasks.created_on",
+        "tbl_services.service_name",
+        "tbl_treatment_types.treatment_name",
+        "tbl_other_tasks.scheduled_time",
+        "tbl_other_tasks.start_time",
+        "tbl_other_tasks.end_time"
+      ],
+      order_by: {
+        "tbl_other_tasks.created_on": "asc"
+      },
+      filters: {
+        "tbl_other_tasks.id":id
+      },
+      pagination: {
+        limit: "1",
+        page: "0",
+      },
+    };
+
+    const response = await fetch(`${API_BASE_URL}/v1/get-other-tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userData?.api_token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch task details");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching task details:", error);
+    throw error;
+  }
+}
 //////////////////////////////////////////////////////////////////////////////////
 
 export const followup = async () => {
@@ -585,7 +687,7 @@ export const fetchGetPestChemicalItems = async () => {
   }
   const activeTaskData = JSON.parse(taskDataStr);
 
-  const service_id= activeTaskData.service_id;
+  const service_id = activeTaskData.service_id;
   // const location = useLongitudeLocation();
   const userData = getUserData();
   try {
@@ -1306,6 +1408,59 @@ export const requestMaterials = async (materialData: any) => {
   }
 };
 
+/////////////////////////Request Material////////////////////////////////////////////
+export const checkOngoingTask = async () => {
+  const userData = getUserData();
+  try {
+    const response = await fetch(`${API_BASE_URL}/v1/check-is-user-on-job`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userData?.api_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch treatment types");
+    }
+
+    const data = await response.json();
+    console.log("getTreatmentTypes: Parsed response data:", data);
+
+    return data;
+  } catch (error) {
+    console.error("getTreatmentTypes: Error fetching treatment types:", error);
+    throw error;
+  }
+};
+
+
+/////////////////////////Request Material////////////////////////////////////////////
+export const updateOtherTask = async (payload: any) => {
+  const userData = getUserData();
+  try {
+    const response = await fetch(`${API_BASE_URL}/v1/update-other-task`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userData?.api_token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch treatment types");
+    }
+
+    const data = await response.json();
+    console.log("getTreatmentTypes: Parsed response data:", data);
+
+    return { response, data };
+  } catch (error) {
+    console.error("getTreatmentTypes: Error fetching treatment types:", error);
+    throw error;
+  }
+};
 ////////////////////////Reschedule Api///////////////////////////////////////////////
 
 // export const taskRescheduleData = async (requestBody: any) => {
